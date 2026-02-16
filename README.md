@@ -26,6 +26,7 @@ This repository tracks the evolution of Vibe Science across four major releases,
 | [**v4.0**](vibe-science-v4.0/) | ARBOR SCIENTIAE | OTAE-Tree | Tree search, branch scoring, serendipity branches |
 | [**v4.5**](vibe-science-v4.5/) | COLLIGITE FRAGMENTA | OTAE-Tree + Brainstorm | Phase 0 brainstorm engine, R2 6 modes, 5-stage pipeline |
 | [**v5.0**](vibe-science-v5.0/) | IUDEX | OTAE-Tree + Verification | SFI, blind-first pass, R3 judge agent, schema-validated gates |
+| [**v5.0 Codex**](vibe-science-v5.0-codex/) | IUDEX | Same as v5.0 | OpenAI Codex port (condensed SKILL.md, no hooks/TEAM) |
 
 <p align="center">
   <img src="logos/logo-v3.5.svg" alt="v3.5" width="340">
@@ -119,16 +120,22 @@ vibe-science/
 │   ├── gates/
 │   └── assets/
 │
-└── vibe-science-v5.0/          ← Claude Code skill (v5.0 IUDEX)
+├── vibe-science-v5.0/          ← Claude Code skill (v5.0 IUDEX)
+│   ├── SKILL.md
+│   ├── CLAUDE.md
+│   ├── protocols/
+│   ├── gates/
+│   ├── schemas/
+│   └── assets/
+│
+└── vibe-science-v5.0-codex/    ← OpenAI Codex skill (v5.0 IUDEX)
     ├── SKILL.md
-    ├── CLAUDE.md
-    ├── protocols/
-    ├── gates/
-    ├── schemas/
+    ├── agents/openai.yaml
+    ├── references/
     └── assets/
 ```
 
-The **OpenAI Codex** version of v5.0 is maintained on the [`codex`](../../tree/codex) branch.
+The **OpenAI Codex** version of v5.0 is also available in `vibe-science-v5.0-codex/`.
 
 ---
 
@@ -146,11 +153,9 @@ claude plugins add ./vibe-science/vibe-science-v3.5    # stable, paper version
 
 ### OpenAI Codex
 
-Switch to the `codex` branch:
-
 ```bash
-git checkout codex
-# Follow instructions in that branch's README.md
+# The Codex version is in vibe-science-v5.0-codex/
+# Follow instructions in vibe-science-v5.0-codex/README.md
 ```
 
 ### Manual (any LLM interface)
