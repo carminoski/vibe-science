@@ -4,10 +4,10 @@ description: Scientific research engine with agentic tree search. Infinite loops
 license: Apache-2.0
 metadata:
     version: "4.5.0"
-    codename: "ARBOR VITAE — PRUNED"
+    codename: "ARBOR VITAE (Pruned)"
     skill-author: th3vib3coder
     architecture: OTAE-Tree (Observe-Think-Act-Evaluate inside Tree Search)
-    lineage: "v3.5 TERTIUM DATUR + AI-Scientist-v2 reverse engineering"
+    lineage: "v3.5 TERTIUM DATUR → v4.0 ARBOR VITAE → v4.5 ARBOR VITAE (Pruned)"
     sources: Ralph, GSD, BMAD, Codex unrolled loop, Anthropic bio-research, ChatGPT Spec Kit, Sakana AI-Scientist-v2 (arXiv:2504.08066v1)
     changelog: "v4.0.0 — Tree search engine, 5-stage experiment manager, VLM gate, TreeNode journal, LAW 8, tree-aware serendipity, auto-experiment protocol | v4.5.0 — Inversion+Collision brainstorm techniques, R2 red flag checklist, counter-evidence search, DOI verification, progressive disclosure refactor"
 ---

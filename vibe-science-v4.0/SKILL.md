@@ -7,7 +7,7 @@ metadata:
     codename: "ARBOR VITAE"
     skill-author: th3vib3coder
     architecture: OTAE-Tree (Observe-Think-Act-Evaluate inside Tree Search)
-    lineage: "v3.5 TERTIUM DATUR + AI-Scientist-v2 reverse engineering"
+    lineage: "v3.5 TERTIUM DATUR → v4.0 ARBOR VITAE"
     sources: Ralph, GSD, BMAD, Codex unrolled loop, Anthropic bio-research, ChatGPT Spec Kit, Sakana AI-Scientist-v2 (arXiv:2504.08066v1)
     changelog: "v4.0.0 — Tree search engine, 5-stage experiment manager, VLM gate, TreeNode journal, LAW 8, tree-aware serendipity, auto-experiment protocol"
 ---
