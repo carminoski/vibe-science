@@ -182,20 +182,20 @@ This repository documents the evolution of Vibe Science for the **VibeX 2026** p
 
 If you use Vibe Science in your research and it contributes to published results, please cite:
 
-> Carmine Russo & Claudio Bertelli, *Vibe Science: an AI-native research engine with adversarial review and serendipity tracking*, 2026. Available at: https://github.com/carminoski/vibe-science
+> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: an AI-native research engine with adversarial review and serendipity tracking.* Available at: https://github.com/carminoski/vibe-science
 
 ---
 
 Se utilizzi Vibe Science nella tua ricerca e questa contribuisce a risultati pubblicati, ti chiediamo di citare:
 
-> Carmine Russo & Claudio Bertelli, *Vibe Science: un motore di ricerca AI-nativo con revisione avversariale e tracciamento della serendipità*, 2026. Disponibile su: https://github.com/carminoski/vibe-science
+> Russo, C. & Bertelli, E. (MD) (2026). *Vibe Science: un motore di ricerca AI-nativo con revisione avversariale e tracciamento della serendipità.* Disponibile su: https://github.com/carminoski/vibe-science
 
 ---
 
 ## License
 
-MIT — see [LICENSE](vibe-science-v5.0/LICENSE).
+Apache 2.0 — see [LICENSE](vibe-science-v5.0/LICENSE).
 
 ## Authors
 
-**Carmine Russo** (carminoski) · **Claudio Bertelli**
+**Carmine Russo** (carmine.russo@gmail.com) · **Dr. Elisa Bertelli** (elisabertel@gmail.com)

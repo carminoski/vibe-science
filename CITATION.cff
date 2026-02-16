@@ -1,0 +1,41 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it as below."
+type: software
+title: "Vibe Science"
+abstract: >-
+  An AI-native research engine that combines structured methodology (OTAE loop),
+  adversarial review (Reviewer 2 Ensemble), typed evidence tracking, quality gates,
+  and serendipity preservation for systematic scientific discovery.
+authors:
+  - family-names: Russo
+    given-names: Carmine
+    email: carmine.russo@gmail.com
+    alias: carminoski
+  - family-names: Bertelli
+    given-names: Elisa
+    email: elisabertel@gmail.com
+    name-suffix: MD
+version: "5.0.0"
+date-released: "2026-02-16"
+license: Apache-2.0
+repository-code: "https://github.com/carminoski/vibe-science"
+keywords:
+  - scientific-research
+  - ai-agent
+  - adversarial-review
+  - evidence-tracking
+  - serendipity
+  - scRNA-seq
+  - research-methodology
+  - quality-gates
+references:
+  - type: article
+    title: "Vibe Science: AI-native research with adversarial review and serendipity tracking"
+    authors:
+      - family-names: Russo
+        given-names: Carmine
+      - family-names: Bertelli
+        given-names: Elisa
+    year: 2026
+    conference:
+      name: "VibeX 2026"
