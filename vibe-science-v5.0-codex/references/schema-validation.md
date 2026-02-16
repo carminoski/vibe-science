@@ -8,15 +8,15 @@
 
 | Gate | Schema File | What It Enforces |
 |------|-------------|-----------------|
-| D1 (Claim Promotion) | `schemas/claim-promotion.schema.json` | Evidence chain with verified DOIs, confidence with all 5 float components, confounder_harness (raw/conditioned/matched), counter_evidence_search (>=1 DB) |
-| D2 (RQ Conclusion) | `schemas/rq-conclusion.schema.json` | All claims referenced by ID, all VERIFIED or CONFIRMED, R2 final verdict present, tree snapshot ref |
-| S4 (Ablation Exit) | `schemas/stage4-exit.schema.json` | Ablation matrix (component/removed/metric_delta), multi-seed results (>=3), confounder harnesses for all promoted claims |
-| S5 (Synthesis Exit) | `schemas/stage5-exit.schema.json` | R2 ensemble verdict = ACCEPT, D2 reference, all claims with final status |
-| L0 (Source Validity) | `schemas/source-validity.schema.json` | Each source has DOI with verified=true, confidence computed (not null), registered in claim ledger |
-| L2 (Review Completeness) | `schemas/review-completeness.schema.json` | R2 ensemble report references (array of IDs), all fatal flaws resolved (resolution field), counter-evidence search completed |
-| B0 (Brainstorm Quality) | `schemas/brainstorm-quality.schema.json` | Gaps array (min 3), data availability score (float >=0.5), hypothesis with null_hypothesis, R2 verdict |
-| V0 (R2 Vigilance) | `schemas/vigilance-check.schema.json` | Seeded faults array with caught boolean for each, all caught = true |
-| -- (Serendipity Seed) | `schemas/serendipity-seed.schema.json` | Structured seed object (origin claim, signal, testable prediction, data pointers) |
+| D1 (Claim Promotion) | `assets/schemas/claim-promotion.schema.json` | Evidence chain with verified DOIs, confidence with all 5 float components, confounder_harness (raw/conditioned/matched), counter_evidence_search (>=1 DB) |
+| D2 (RQ Conclusion) | `assets/schemas/rq-conclusion.schema.json` | All claims referenced by ID, all VERIFIED or CONFIRMED, R2 final verdict present, tree snapshot ref |
+| S4 (Ablation Exit) | `assets/schemas/stage4-exit.schema.json` | Ablation matrix (component/removed/metric_delta), multi-seed results (>=3), confounder harnesses for all promoted claims |
+| S5 (Synthesis Exit) | `assets/schemas/stage5-exit.schema.json` | R2 ensemble verdict = ACCEPT, D2 reference, all claims with final status |
+| L0 (Source Validity) | `assets/schemas/source-validity.schema.json` | Each source has DOI with verified=true, confidence computed (not null), registered in claim ledger |
+| L2 (Review Completeness) | `assets/schemas/review-completeness.schema.json` | R2 ensemble report references (array of IDs), all fatal flaws resolved (resolution field), counter-evidence search completed |
+| B0 (Brainstorm Quality) | `assets/schemas/brainstorm-quality.schema.json` | Gaps array (min 3), data availability score (float >=0.5), hypothesis with null_hypothesis, R2 verdict |
+| V0 (R2 Vigilance) | `assets/schemas/vigilance-check.schema.json` | Seeded faults array with caught boolean for each, all caught = true |
+| -- (Serendipity Seed) | `assets/schemas/serendipity-seed.schema.json` | Structured seed object (origin claim, signal, testable prediction, data pointers) |
 
 ---
 
@@ -28,7 +28,7 @@ HOW:  Before evaluating gate criteria, validate artifact against JSON Schema.
 
 1. Gate check begins.
 2. Load expected artifact (YAML/JSON file in .vibe-science/).
-3. Validate against corresponding JSON Schema from schemas/ directory.
+3. Validate against corresponding JSON Schema from assets/schemas/ directory.
 4. If VALID   -> proceed with normal gate evaluation.
 5. If INVALID -> gate FAILS immediately.
    - Error message specifies: which field, expected type, actual value (see format below).
@@ -67,18 +67,19 @@ Schema validation ensures **structural completeness** (all required fields prese
 
 ## Schema File Locations
 
-All schema files live in the `schemas/` directory at the skill root:
+All schema files live in the `assets/schemas/` directory at the skill root:
 
 ```
 vibe-science-v5.0/
-  schemas/
-    claim-promotion.schema.json
-    rq-conclusion.schema.json
-    stage4-exit.schema.json
-    stage5-exit.schema.json
-    source-validity.schema.json
-    review-completeness.schema.json
-    brainstorm-quality.schema.json
-    vigilance-check.schema.json
-    serendipity-seed.schema.json
+  assets/
+    schemas/
+      claim-promotion.schema.json
+      rq-conclusion.schema.json
+      stage4-exit.schema.json
+      stage5-exit.schema.json
+      source-validity.schema.json
+      review-completeness.schema.json
+      brainstorm-quality.schema.json
+      vigilance-check.schema.json
+      serendipity-seed.schema.json
 ```

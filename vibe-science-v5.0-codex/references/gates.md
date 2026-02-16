@@ -169,7 +169,7 @@ OPTIONAL: If no VLM access, skip this gate. Not blocking.
 □ Confidence scores computed (not guessed)
 □ Artifact validates against JSON Schema (structural completeness check)
 ```
-**Schema**: `schemas/source-validity.schema.json`
+**Schema**: `assets/schemas/source-validity.schema.json`
 
 ### Gate L1 — Coverage Adequacy
 ```
@@ -187,7 +187,7 @@ OPTIONAL: If no VLM access, skip this gate. Not blocking.
 □ Counter-evidence explicitly searched for every conclusion
 □ Artifact validates against JSON Schema (structural completeness check)
 ```
-**Schema**: `schemas/review-completeness.schema.json`
+**Schema**: `assets/schemas/review-completeness.schema.json`
 
 ---
 
@@ -221,7 +221,7 @@ FAIL actions:
 - No counter-evidence search → Perform search, document results
 - < 3 falsification attempts → Design and run additional tests
 ```
-**Schema**: `schemas/claim-promotion.schema.json`
+**Schema**: `assets/schemas/claim-promotion.schema.json`
 
 ### Gate D2 — RQ Conclusion
 ```
@@ -237,7 +237,7 @@ FAIL actions:
 □ Tree visualization final snapshot saved
 □ Artifact validates against JSON Schema (structural completeness check)
 ```
-**Schema**: `schemas/rq-conclusion.schema.json`
+**Schema**: `assets/schemas/rq-conclusion.schema.json`
 
 ---
 
@@ -338,7 +338,7 @@ FAIL actions:
 - R2 rejected → Address R2 demands, re-review
 - User not consulted → Present options to user
 ```
-**Schema**: `schemas/brainstorm-quality.schema.json`
+**Schema**: `assets/schemas/brainstorm-quality.schema.json`
 
 ---
 
@@ -408,7 +408,7 @@ FAIL actions:
 - No cross-validation → Attempt or document why impossible
 - Harness missing → Run confounder harness before advancing (LAW 9)
 ```
-**Schema**: `schemas/stage4-exit.schema.json`
+**Schema**: `assets/schemas/stage4-exit.schema.json`
 
 ### Gate S5 — Synthesis & Review Exit
 **When:** Final gate before concluding the RQ.
@@ -423,7 +423,7 @@ PASS criteria:
 □ Tree visualization final snapshot saved
 □ Knowledge base updated
 □ All artifacts crystallized to files (LAW 10)
-□ Artifact validates against schemas/stage5-exit.schema.json
+□ Artifact validates against assets/schemas/stage5-exit.schema.json
 
 FAIL actions:
 - R2 not ACCEPT → Address demands, re-review
@@ -432,7 +432,7 @@ FAIL actions:
 - DISPUTED claims exist → Resolution required: (a) new data resolves dispute, (b) claim dropped, (c) human override with documented rationale
 - Missing harnesses → Complete before concluding
 ```
-**Schema**: `schemas/stage5-exit.schema.json`
+**Schema**: `assets/schemas/stage5-exit.schema.json`
 
 ---
 
@@ -446,7 +446,7 @@ PASS criteria (ALL must be true):
 □ All non-EQUIV seeded faults caught by R2 (caught=true)
 □ RMS (Review Miss Score) >= 0.80: faults_caught / faults_injected (EQUIV excluded from denominator)
 □ FAR (False Accusation Rate) <= 0.10: false_accusations / real_claims_count
-□ Schema validation: artifact validates against schemas/vigilance-check.schema.json
+□ Schema validation: artifact validates against assets/schemas/vigilance-check.schema.json
 
 FAIL actions:
 - R2 missed seeded faults → review INVALID, R2 must re-review ENTIRE claim set
@@ -455,8 +455,8 @@ FAIL actions:
 - RETRY LIMIT: max 3 V0 failures per session. After 3 → ESCALATE to human.
 ```
 
-**Protocol**: `protocols/seeded-fault-injection.md`
-**Schema**: `schemas/vigilance-check.schema.json`
+**Protocol**: `references/seeded-fault-injection.md`
+**Schema**: `assets/schemas/vigilance-check.schema.json`
 
 ---
 
@@ -485,7 +485,7 @@ FAIL actions:
 5. Falsification Demand (0-3): Did R2 specify concrete falsification tests?
 6. Escalation (0-3): Did R2 escalate unresolved issues appropriately?
 
-**Protocol**: `protocols/judge-agent.md`
+**Protocol**: `references/judge-agent.md`
 **Rubric**: `assets/judge-rubric.yaml`
 
 ---
@@ -521,5 +521,5 @@ In every run report, sprint report, and decision log:
 | B0 | brainstorm-quality.schema.json | >=3 gaps, data availability >=0.5, falsifiable hypothesis |
 | V0 | vigilance-check.schema.json | All non-EQUIV faults caught, RMS >=0.80, FAR <=0.10 |
 
-**Protocol**: `protocols/schema-validation.md`
+**Protocol**: `references/schema-validation.md`
 **Schemas are READ-ONLY**: No agent can modify schema files. Only the human architect can change them.

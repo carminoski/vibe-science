@@ -1,6 +1,8 @@
 ---
 name: vibe-science
 description: "Scientific research engine with adversarial review, tree search, and serendipity detection. Use when: exploring hypotheses, validating findings against literature, running computational experiments with quality gates, or hunting for unexpected discoveries. Do NOT use for simple Q&A, code editing, or non-research tasks."
+skill-author: th3vib3coder
+license: Apache-2.0
 ---
 
 # Vibe Science v5.0 — IUDEX

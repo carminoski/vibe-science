@@ -199,7 +199,7 @@ vibe-science-v5.0-codex/
 ├── LICENSE                     Apache 2.0
 ├── agents/
 │   └── openai.yaml             Codex agent manifest
-├── references/                 22 protocol files (loaded on demand)
+├── references/                 23 protocol files (loaded on demand)
 │   ├── constitution.md         Full 10 Laws + role constraints + permission model
 │   ├── brainstorm-engine.md    Phase 0: 8-step scientific brainstorm
 │   ├── loop-otae.md            OTAE-Tree loop protocol

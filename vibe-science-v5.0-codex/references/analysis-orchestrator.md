@@ -164,7 +164,7 @@ Before any computational run, produce a run plan:
 ## Dependencies
 - Input files: [list with expected checksums]
 - Required packages: [list with versions]
-- Scientific-skills MCP tools needed: [list]
+- Scientific tools needed: [list]
 
 ## Estimated Resources
 - Time: [estimate]
@@ -223,7 +223,7 @@ When an error occurs mid-pipeline:
 
 ## Script Library: Standard Patterns
 
-When generating scripts, follow these patterns. Route to scientific-skills MCP for implementation details.
+When generating scripts, follow these patterns. Route to scientific tools for implementation details.
 
 ### QC Script Pattern
 ```python

@@ -183,7 +183,7 @@ After identifying gaps via blue-ocean hunting, systematically invert consensus c
 - **Success criteria:** [measurable]
 - **Kill conditions:** [when to abandon]
 - **Data:** [which dataset]
-- **Skills needed:** [which MCP tools]
+- **Skills needed:** [which available tools]
 
 ## H2: ...
 ```

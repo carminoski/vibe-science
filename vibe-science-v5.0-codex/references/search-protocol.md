@@ -2,7 +2,7 @@
 
 ## Source Priority
 
-Route through Skill Router to appropriate MCP skills:
+Route through Skill Router to appropriate scientific tools:
 
 1. **Scopus** (via API/web) — comprehensive, citation data, best for systematic coverage
 2. **PubMed** → `pubmed-database` skill — biomedical focus, MeSH precision
@@ -28,7 +28,7 @@ Every search must be logged:
 
 **Query:** TITLE-ABS-KEY("unbalanced optimal transport") AND TITLE-ABS-KEY(biology OR genomics)
 **Database:** Scopus | PubMed | OpenAlex | bioRxiv
-**MCP Skill used:** pubmed-database | openalex-database | biorxiv-database | web_search
+**Tool used:** pubmed-database | openalex-database | biorxiv-database | web_search
 **Date:** YYYY-MM-DD
 **Results:** N total
 **Relevant:** N relevant

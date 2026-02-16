@@ -51,7 +51,7 @@ The Auto-Experiment protocol handles the ACT phase for computational tree nodes:
    - Print metrics to stdout in parseable format (see Metric Output Format)
    - Save figures to specified output directory
    - Save results to specified output file
-3. Use skill-router.md to dispatch to appropriate MCP skill for domain-specific code
+3. Use skill-router.md to dispatch to appropriate specialist tool for domain-specific code
 
 ### For `improve` / `hyperparameter` Nodes (refinement)
 1. Start from parent node's code (`code_path` in parent's YAML)
@@ -162,7 +162,7 @@ Each computational node produces files in:
 
 ## Skill Dispatch for Code Generation
 
-When generating code, dispatch to the appropriate MCP skill:
+When generating code, dispatch to the appropriate specialist tool:
 
 | Task | Skill | Notes |
 |------|-------|-------|

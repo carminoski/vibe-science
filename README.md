@@ -450,15 +450,18 @@ R3 NEVER modifies R2's report.
 Schemas are READ-ONLY for all agents.
 ```
 
-### 3 New Constitutional Laws (v5.0)
+### v5.0 Structural Innovations (not new Laws — new enforcement mechanisms)
 
-| Law | Name | Rule |
-|-----|------|------|
-| 8 → | BLIND BEFORE BELIEF | Review claims without seeing justifications first |
-| 9 → | FALSIFY FIRST | Inject known faults to test reviewer vigilance |
-| 10 → | SCHEMA ENFORCES | 8 gates validate against JSON Schema; prose claims ignored |
+v5.0 keeps the same 10 Laws as v4.0/v4.5. The breakthrough is making them **architecturally unbypassable** through 4 new structural mechanisms:
 
-*Note: Laws 8-10 from v4.0 (Explore, Confounder Harness, Crystallize) remain — v5.0 has 10 Laws total, with 3 replaced.*
+| Innovation | What it does | Gate |
+|------------|-------------|------|
+| **Seeded Fault Injection (SFI)** | Inject known faults before R2 reviews. Miss = review INVALID. | V0 (RMS >= 0.80) |
+| **Blind-First Pass (BFP)** | R2 reviews claims before seeing justifications. Breaks anchoring bias. | — (within review) |
+| **Judge Agent (R3)** | Meta-reviewer scores R2's review on 6 dimensions. Reviews the review, not the claims. | J0 (>= 12/18) |
+| **Schema-Validated Gates (SVG)** | 8 gates enforce JSON Schema. Prose claims of completion are ignored. | 8 schema gates |
+
+*Plus: Circuit Breaker (deadlock → DISPUTED), Agent Permission Model (separation of powers), R2 Salvagente (killed claims must produce serendipity seeds).*
 
 ### Quality Gates: 27 Total
 
@@ -715,13 +718,13 @@ vibe-science/
 ├── vibe-science-v4.0/          ← Claude Code skill (v4.0)
 │   ├── SKILL.md + CLAUDE.md
 │   ├── protocols/ (16)
-│   ├── gates/ + schemas/
+│   ├── gates/
 │   └── assets/ (6)
 │
 ├── vibe-science-v4.5/          ← Claude Code skill (v4.5)
 │   ├── SKILL.md + CLAUDE.md
 │   ├── protocols/ (16)
-│   ├── gates/ + schemas/
+│   ├── gates/
 │   └── assets/ (6)
 │
 ├── vibe-science-v5.0/          ← Claude Code skill (v5.0 IUDEX)
@@ -734,7 +737,7 @@ vibe-science/
 └── vibe-science-v5.0-codex/    ← OpenAI Codex skill (v5.0 IUDEX)
     ├── SKILL.md (~480 lines)
     ├── agents/openai.yaml
-    ├── references/ (22)
+    ├── references/ (23)
     └── assets/ (11)
 ```
 

@@ -284,7 +284,7 @@ The claim ledger status field gains three new values:
 - `ARTIFACT` — killed by confounder harness (sign reversal)
 - `CONFOUNDED` — downgraded by confounder harness (>50% collapse)
 - `ROBUST` — survived confounder harness (promotable)
-- `DISPUTED` — frozen by circuit breaker (irreconcilable R2/researcher disagreement, see protocols/circuit-breaker.md)
+- `DISPUTED` — frozen by circuit breaker (irreconcilable R2/researcher disagreement, see references/circuit-breaker.md)
 
 These replace the v3.5 `VERIFIED` for quantitative claims. A quantitative claim CANNOT be `VERIFIED` without passing the confounder harness.
 
