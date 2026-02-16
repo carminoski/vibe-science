@@ -799,4 +799,4 @@ Apache 2.0 — see [LICENSE](vibe-science-v5.0/LICENSE).
 
 ## Authors
 
-**Carmine Russo** (carmine.russo@gmail.com) · **Dr. Elisa Bertelli** (elisabertel@gmail.com)
+**[Carmine Russo](https://github.com/th3vib3coder)** · **Dr. Elisa Bertelli (MD)**

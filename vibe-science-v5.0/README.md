@@ -25,6 +25,49 @@
 
 ---
 
+## Architecture Overview
+
+```
+╔══════════════════════════════════════════════════════════════════════╗
+║                  VIBE SCIENCE v5.0 — IUDEX                          ║
+║          R2 is structurally unbypassable, not just prompted          ║
+╠══════════════════════════════════════════════════════════════════════╣
+║                                                                      ║
+║  ┌─────────┐    ┌─────────┐    ┌───────────┐    ┌──────────┐       ║
+║  │   SFI   │───→│   BFP   │───→│  R2 4×6   │───→│    V0    │       ║
+║  │ Seeded  │    │ Blind-  │    │ Ensemble  │    │ Vigilance│       ║
+║  │ Fault   │    │ First   │    │ 4 reviewers│    │  Gate    │       ║
+║  │Injection│    │ Pass    │    │ 6 modes   │    │ RMS≥0.80 │       ║
+║  └─────────┘    └─────────┘    └───────────┘    └────┬─────┘       ║
+║   Inject          Review         Full review          │              ║
+║   1-3 known       claims         with counter-        │              ║
+║   faults          BLIND          evidence       PASS? │ FAIL→redo   ║
+║                   first          + tools              ↓              ║
+║                                                ┌──────────┐         ║
+║                                                │  R3 / J0 │         ║
+║                                                │  Judge   │         ║
+║                                                │  Agent   │         ║
+║                                                │ 6-dim    │         ║
+║                                                │ rubric   │         ║
+║                                                └────┬─────┘         ║
+║                                               PASS? │ FAIL→redo    ║
+║                                                     ↓               ║
+║           ┌──────────────┐    ┌──────────────────────────┐          ║
+║           │   SCHEMA     │───→│       27 GATES            │          ║
+║           │  Validation  │    │  (8 schema-enforced)      │          ║
+║           │  JSON Schema │    │  Pipeline·Lit·Decision·   │          ║
+║           │  8 critical  │    │  Tree·Brainstorm·Stage·   │          ║
+║           │  gates       │    │  Vigilance·Judge          │          ║
+║           └──────────────┘    └──────────────────────────┘          ║
+║                                                                      ║
+║  + 10 Laws · OTAE-Tree · 5-Stage Manager · Evidence Engine          ║
+║  + Serendipity Engine · Brainstorm Engine · Circuit Breaker         ║
+║  + Agent Permission Model (separation of verdict and execution)     ║
+╚══════════════════════════════════════════════════════════════════════╝
+```
+
+---
+
 ## The Problem
 
 AI agents are dangerous in science. Not because they hallucinate — that's the easy problem.
@@ -924,7 +967,7 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 
-**Built by [th3vib3coder](https://github.com/th3vib3coder)**
+**Authors**: [Carmine Russo](https://github.com/th3vib3coder) · Dr. Elisa Bertelli (MD)
 
 *Built with Claude. Tested against Reviewer 2. Survived 21 sprints. Validated by 3 models.*
 

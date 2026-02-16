@@ -726,8 +726,10 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 ---
 
-**Built by [th3vib3coder](https://github.com/th3vib3coder)**
+**Authors**: [Carmine Russo](https://github.com/th3vib3coder) · Dr. Elisa Bertelli (MD)
 
 *Built with Claude. Tested against Reviewer 2. Survived 21 sprints.*
+
+**Vibe Science v4.5 ARBOR VITAE (Pruned)** — Progressive disclosure, R2 hardened.
 
 </div>
