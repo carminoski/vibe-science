@@ -1,0 +1,14 @@
+{
+  "name": "vibe-science",
+  "version": "3.5.1",
+  "codename": "TERTIUM DATUR",
+  "description": "Scientific research in serendipity mode. Infinite loops until discovery, rigorous tracking, adversarial review, executable pipelines.",
+  "author": "carminoski",
+  "license": "MIT",
+  "skills": [
+    "SKILL.md"
+  ],
+  "commands": [
+    "commands/start.md"
+  ]
+}
