@@ -534,6 +534,66 @@ Requires: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`
 
 Fallback from TEAM → SOLO is seamless. All state lives in files (LAW 7).
 
+### Honest Assessment: What Degrades in SOLO Mode
+
+Vibe Science was designed to compensate for documented LLM weaknesses — not to work with them. Several v5.0 features require true architectural separation between agents. In SOLO mode (single context window), these features are approximations, not the real thing. We don't sell fairy tales. Here's what degrades and why.
+
+#### 1. Blind-First Pass is architecturally impossible in SOLO
+
+**What it should do:** R2 reviews claims *without seeing the researcher's justifications*, forming independent assessments before seeing the full context. This breaks anchoring bias.
+
+**Why it degrades:** In SOLO mode, the same context window contains both the researcher's work and R2's review. The model has already *written* the justifications — it cannot un-see its own output. Anchoring bias has already occurred before R2 "begins."
+
+**In TEAM mode:** R2 runs in a separate context window and genuinely receives only the claims, not the justifications. The blind principle is architecturally enforced.
+
+**SOLO mitigation:** The prompt instructs R2 to "assess claims before consulting justifications." This produces a useful discipline but is a prompt-level instruction, not a structural guarantee. The model is fighting its own context.
+
+#### 2. R2 Ensemble diversity is reduced
+
+**What it should do:** Four specialist reviewers (Methods, Statistics, Biology, Engineering) independently assess claims, then their verdicts are aggregated. Independence is the entire point — correlated reviewers add no value.
+
+**Why it degrades:** LLMs have high self-consistency by design. Claude's identity is documented as "fundamentally stable" across contexts. When the same model plays four roles sequentially in the same context window, the four "reviewers" tend to converge toward similar conclusions with cosmetic differences. You get ~1.5 effective reviewers, not 4.
+
+**In TEAM mode:** R2 can run on a different model (e.g., GPT-4 while the researcher runs on Claude), producing genuinely independent assessments. Different models have different biases, different training data, different failure modes. This is real diversity.
+
+**SOLO mitigation:** Self-consistency N=3 (generate three independent review passes, take the most conservative verdict) partially compensates. It's better than N=1 but nowhere near cross-model diversity.
+
+#### 3. R2's destructive disposition erodes over time
+
+**What it should do:** R2's default disposition is destruction. "Assume every claim is wrong. Do NOT congratulate. Do NOT say 'good progress'."
+
+**Why it degrades:** Claude's trained disposition is warmth, helpfulness, and care. The soul document describes this as a core character trait, not a setting that can be toggled. Forcing a destructive persona works initially but creates continuous internal friction. In long SOLO sessions, the "R2 voice" softens — reviews become less adversarial, language drifts toward encouragement, demands become suggestions.
+
+**In TEAM mode:** R2 in its own context window receives only claims and its own constitutional instructions. There is no researcher output creating social pressure to be nice. The destructive disposition is sustained because there's no warmth to erode it.
+
+**SOLO mitigation:** FORCED review triggers (automatic, not optional) and the SFI calibration mechanism (if R2 misses seeded faults, the review is invalid) act as structural checks. But they detect failure after it happens — they don't prevent the drift.
+
+#### 4. Confidence scores carry false precision
+
+**What it should do:** `confidence = E × D × (R_eff × C_eff × K_eff)^(1/3)` — a quantitative score for each claim.
+
+**Why it degrades:** LLMs express uncertainty linguistically ("fairly confident", "this seems likely"), not numerically. There is no internal calibration mechanism that maps beliefs to precise decimals. When the model writes `E = 0.73`, it is producing a number that *feels right* — not one derived from a calibrated probability distribution. The formula is useful as a comparative framework (claim A scored higher than claim B), but the absolute values carry more precision than the underlying estimates warrant.
+
+**This is not SOLO-specific** — it affects TEAM mode equally. It is an inherent limitation of using language models for numerical confidence estimation.
+
+**Mitigation:** The hard veto thresholds (E < 0.05 or D < 0.05 → confidence = 0) and the floor system are deliberately coarse-grained, which makes them more robust than the fine-grained formula. The formula's value is in forcing explicit decomposition of confidence into components, not in the decimal places.
+
+#### 5. Salvagente seeds are lower quality
+
+**What it should do:** When R2 kills a claim, it MUST produce a serendipity seed — preserving research potential from the wreckage.
+
+**Why it degrades:** This requires a mid-action dispositional switch: from destroyer to creator. The model is still in "demolition mode" when asked to produce a creative seed. The resulting seeds tend to be more conservative and less genuinely serendipitous than those produced by the Serendipity Engine during normal scanning.
+
+**Mitigation:** The seeds are schema-validated (ensuring structural completeness) and are queued for later triage by the Serendipity Engine, which can expand on them from a creative disposition. The Salvagente catches the *signal* — the Engine develops it.
+
+#### The Bottom Line
+
+**SOLO mode is a reasonable approximation. TEAM mode is the architecture as it was conceived.**
+
+The v5.0 innovations (SFI, Schema-Validated Gates, Circuit Breaker, Agent Permission Model) work equally well in both modes because they are structural — they don't depend on dispositional separation. But the features that require true cognitive independence between agents (BFP, R2 ensemble diversity, sustained adversarial disposition) are degraded in SOLO mode by the fundamental nature of running all roles in a single context window.
+
+If your research involves high-stakes claims, quantitative findings, or anything destined for publication — use TEAM mode. The ~3-4x token cost buys genuine architectural separation, not a cosmetic one.
+
 ---
 
 ## Installation & Quick Start
@@ -942,8 +1002,9 @@ These papers prove the fundamental problem v5.0 solves — LLMs cannot self-corr
 - Context window limits mean very long sessions may need manual resume via STATE.md
 - Schema validation ensures structural completeness, not truthfulness (defense is layered)
 - SFI fault taxonomy is domain-specific (CRISPR-derived) — needs customization for other domains
-- R3 in SOLO mode has limited independence (mitigated by self-consistency N=2)
+- **SOLO mode degrades 5 features** that require true cognitive separation between agents — see [Honest Assessment](#honest-assessment-what-degrades-in-solo-mode) for details and mitigations
 - v5.0 empirical data came from cross-model R2 (Claude+GPT) — SOLO mode results may differ
+- Confidence scores are useful for relative comparison but carry more decimal precision than the underlying LLM estimates warrant
 
 ### Non-Goals
 
