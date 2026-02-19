@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="logos/logo-v5.0.svg" alt="Vibe Science" width="700">
+  <img src="logos/logo-v5.5.svg" alt="Vibe Science" width="700">
 </p>
 
 <p align="center">
   <a href="https://doi.org/10.5281/zenodo.18665031"><img src="https://zenodo.org/badge/1148022920.svg" alt="DOI"></a>
-  <a href="vibe-science-v5.0/LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
-  <img src="https://img.shields.io/badge/version-5.0.0-orange.svg" alt="Version">
+  <a href="vibe-science-v5.5/LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="License"></a>
+  <img src="https://img.shields.io/badge/version-5.5.0-orange.svg" alt="Version">
 </p>
 
 # Vibe Science
@@ -14,7 +14,7 @@
 
 Vibe Science turns an LLM into a disciplined research agent. It provides a structured methodology (OTAE loop), an adversarial review system (Reviewer 2 Ensemble), typed evidence tracking, and quality gates — while preserving room for unexpected discoveries.
 
-This repository tracks the evolution of Vibe Science across four major releases, from the original OTAE loop to a fully fault-injected verification framework. Each version is self-contained and independently installable.
+This repository tracks the evolution of Vibe Science across five major releases, from the original OTAE loop to a post-mortem driven data quality framework. Each version is self-contained and independently installable.
 
 ---
 
@@ -76,6 +76,7 @@ None of these were hallucinations. The data was real. The statistics were correc
 | [**v4.0**](vibe-science-v4.0/) | ARBOR VITAE | OTAE-Tree | Tree search, branch scoring, serendipity branches | 10 | 26 |
 | [**v4.5**](vibe-science-v4.5/) | ARBOR VITAE (Pruned) | OTAE-Tree + Brainstorm | Phase 0 brainstorm, R2 6 modes, 5-stage pipeline | 10 | 25 |
 | [**v5.0**](vibe-science-v5.0/) | IUDEX | OTAE-Tree + Verification | SFI, blind-first pass, R3 judge, schema-validated gates | 10 | 27 |
+| [**v5.5**](vibe-science-v5.5/) | ORO | OTAE-Tree + Data Quality | 7 new gates, R2 INLINE, SSOT, structured logbook, post-mortem driven | 10 | 34 |
 | [**v5.0 Codex**](vibe-science-v5.0-codex/) | IUDEX | Same as v5.0 | OpenAI Codex port (condensed SKILL.md, no hooks/TEAM) | 10 | 27 |
 
 <p align="center">
@@ -85,6 +86,9 @@ None of these were hallucinations. The data was real. The statistics were correc
 <p align="center">
   <img src="logos/logo-v4.5.svg" alt="v4.5" width="340">
   <img src="logos/logo-v5.0.svg" alt="v5.0" width="340">
+</p>
+<p align="center">
+  <img src="logos/logo-v5.5.svg" alt="v5.5" width="340">
 </p>
 
 ---
@@ -536,18 +540,87 @@ J0  Judge Assessment (R3)
 
 ---
 
+## v5.5 — ORO
+
+> *The post-mortem release. Every change traces to a real mistake. 12 errors, 7 root causes, ZERO caught by v5.0's automated checks — now fixed.*
+
+v5.5 is an **additive upgrade** born from the CP+CRISPR research run post-mortem. v5.0 verified *claim quality* (is the conclusion supported?) but not *data quality* (are the features correct? do the numbers match?). v5.5 adds the data quality layer.
+
+### Seven New Gates
+
+| Gate | When | What It Catches |
+|------|------|-----------------|
+| **L-1** Literature Pre-Check | Before committing to a research direction | Missing prior art, reinventing the wheel |
+| **DQ1** Post-Extraction | After feature extraction | Zero-variance columns, leakage, missing data |
+| **DQ2** Post-Training | After model training | Worse-than-baseline, single-feature dominance |
+| **DQ3** Post-Calibration | After calibration | Suspiciously perfect results, insufficient samples |
+| **DQ4** Post-Finding | After finding formulation | Number mismatches, missing sample sizes |
+| **DD0** Data Dictionary | Before using any dataset column | Undocumented columns, semantic misunderstandings |
+| **DC0** Design Compliance | At stage transitions | Execution drifting from design |
+
+All gates are **domain-general** — no hardcoded thresholds. They work for any biology research domain.
+
+### R2 INLINE Mode (7th Activation)
+
+Lightweight 7-point checklist applied at **every finding formulation**, not just at FORCED reviews:
+
+```
+INLINE-R2 Checklist:
+ 1. NUMBERS MATCH SOURCE
+ 2. SAMPLE SIZE ADEQUATE
+ 3. ALTERNATIVE EXPLANATIONS
+ 4. TERMINOLOGY PRECISE
+ 5. CLAIM <= EVIDENCE
+ 6. TRACEABLE
+ 7. SURVIVES HOSTILE READ
+
+Verdict: 7/7 = PASS | 5-6 = WARN | <5 = BLOCKED | Item 1 FAIL = HALT
+```
+
+INLINE does NOT replace FORCED — it replaces most BATCH triggers, catching problems at formulation time instead of after 3 findings accumulate.
+
+### Other v5.5 Changes
+
+| Change | What it does |
+|--------|-------------|
+| **SSOT Rule** | All numbers originate from structured data files. Documents reference, never define. |
+| **Structured Logbook** | Mandatory LOGBOOK.md entry in CRYSTALLIZE for every OTAE cycle. Not optional, not retroactive. |
+| **Operational Integrity** | OBSERVE phase checks for orphaned datasets, document sync, design drift. |
+| **Literature Pre-Check** | Phase 0 gains Step 2b: search for prior art BEFORE committing to research direction. |
+| **Data Dictionary** | Document every column meaning before using it. Column names lie. |
+
+### What v5.5 Does NOT Change
+
+The OTAE-Tree loop, 10 Constitutional Laws, R2 Ensemble architecture, SFI, BFP, R3 Judge, Schema-Validated Gates, Circuit Breaker, Agent Permission Model, Serendipity Engine, 5-stage Experiment Manager, and the separation of powers between Builder and Destroyer — all unchanged.
+
+### v5.5 Quality Gates: 34 Total
+
+All 27 v5.0 gates unchanged, plus:
+
+```
+L-1  Literature Pre-Check (before research direction)
+DQ1  Post-Extraction (features valid?)
+DQ2  Post-Training (model meaningful?)
+DQ3  Post-Calibration (calibration plausible?)
+DQ4  Post-Finding (numbers match source?)
+DD0  Data Dictionary (columns documented?)
+DC0  Design Compliance (execution matches design?)
+```
+
+---
+
 ## Key Features Across Versions
 
 ### Reviewer 2 Ensemble — Evolution
 
-| Feature | v3.5 | v4.0 | v4.5 | v5.0 |
-|---------|------|------|------|------|
-| Reviewers | 4 (Methods, Stats, Bio, Eng) | 4 | 4 | 4 |
-| Modes | 3 (standard, batch, forced) | 3 | **6** (+shadow, veto, redirect) | 6 |
-| Workflow | Double-pass | Double-pass | Double-pass + red flags | Double-pass + **BFP** + **SFI** |
-| Independence | Simulated | TEAM mode available | TEAM mode | TEAM + **R3 Judge** |
-| Attack levels | 3-level orthogonal | 3-level | + 12 red flag checklist | + fault injection |
-| Schema enforcement | None | None | None | **8 gates schema-validated** |
+| Feature | v3.5 | v4.0 | v4.5 | v5.0 | v5.5 |
+|---------|------|------|------|------|------|
+| Reviewers | 4 (Methods, Stats, Bio, Eng) | 4 | 4 | 4 | 4 |
+| Modes | 3 (standard, batch, forced) | 3 | **6** (+shadow, veto, redirect) | 6 | **7** (+**INLINE**) |
+| Workflow | Double-pass | Double-pass | Double-pass + red flags | Double-pass + **BFP** + **SFI** | + **INLINE at every finding** |
+| Independence | Simulated | TEAM mode available | TEAM mode | TEAM + **R3 Judge** | TEAM + R3 + INLINE |
+| Attack levels | 3-level orthogonal | 3-level | + 12 red flag checklist | + fault injection | + 7-point INLINE checklist |
+| Schema enforcement | None | None | None | **8 gates schema-validated** | 8 schema + 7 instruction-enforced |
 
 ### Evidence Engine — Evolution
 
@@ -561,13 +634,13 @@ J0  Judge Assessment (R3)
 
 ### Serendipity Engine — Evolution
 
-| Feature | v3.5 | v4.0+ | v5.0 |
-|---------|------|-------|------|
-| Scale | 0-15 | 0-20 | 0-20 |
-| Scanning | Every 10 cycles | Every EVALUATE | Every EVALUATE |
-| Cross-branch | No | **Yes** | Yes |
-| Salvagente | No | No | **Yes** — killed claims produce seeds |
-| Interrupt threshold | >= 12 | >= 15 | >= 15 |
+| Feature | v3.5 | v4.0+ | v5.0 | v5.5 |
+|---------|------|-------|------|------|
+| Scale | 0-15 | 0-20 | 0-20 | 0-20 |
+| Scanning | Every 10 cycles | Every EVALUATE | Every EVALUATE | Every EVALUATE |
+| Cross-branch | No | **Yes** | Yes | Yes |
+| Salvagente | No | No | **Yes** — killed claims produce seeds | Yes |
+| Interrupt threshold | >= 12 | >= 15 | >= 15 | >= 15 |
 
 ---
 
@@ -707,7 +780,8 @@ vibe-science/
 │   ├── logo-v3.5.svg
 │   ├── logo-v4.0.svg
 │   ├── logo-v4.5.svg
-│   └── logo-v5.0.svg
+│   ├── logo-v5.0.svg
+│   └── logo-v5.5.svg
 │
 ├── vibe-science-v3.5/          ← Claude Code skill (v3.5)
 │   ├── SKILL.md                    320 lines
@@ -730,9 +804,18 @@ vibe-science/
 ├── vibe-science-v5.0/          ← Claude Code skill (v5.0 IUDEX)
 │   ├── SKILL.md (~1,150 lines)
 │   ├── CLAUDE.md (constitution)
+│   ├── BLUEPRINT.md (design document)
 │   ├── protocols/ (21)
 │   ├── gates/ + schemas/ (9)
 │   └── assets/ (8)
+│
+├── vibe-science-v5.5/          ← Claude Code skill (v5.5 ORO)
+│   ├── SKILL.md (~1,300 lines)
+│   ├── CLAUDE.md (constitution)
+│   ├── BLUEPRINT.md (design document)
+│   ├── protocols/ (21, enhanced)
+│   ├── gates/ (34 gates)
+│   └── schemas/ (9) + assets/ (8)
 │
 └── vibe-science-v5.0-codex/    ← OpenAI Codex skill (v5.0 IUDEX)
     ├── SKILL.md (~480 lines)
@@ -751,7 +834,8 @@ vibe-science/
 git clone https://github.com/th3vib3coder/vibe-science.git
 
 # Install the version you want:
-claude plugins add ./vibe-science/vibe-science-v5.0    # latest
+claude plugins add ./vibe-science/vibe-science-v5.5    # latest (ORO)
+claude plugins add ./vibe-science/vibe-science-v5.0    # verification release (IUDEX)
 claude plugins add ./vibe-science/vibe-science-v3.5    # stable, paper version
 ```
 
@@ -773,8 +857,8 @@ Upload the `SKILL.md` of your chosen version as a system prompt or project knowl
 This repository documents the evolution of Vibe Science for the **VibeX 2026** publication. Each version directory is a complete, standalone snapshot:
 
 - **v3.5** is the version described in the paper (field-tested, 21 sprints)
-- **v4.0 → v4.5 → v5.0** show the progression of ideas
-- Annotated git tags (`v3.5.0`, `v4.0.0`, `v4.5.0`, `v5.0.0`) provide traceable evolution
+- **v4.0 → v4.5 → v5.0 → v5.5** show the progression of ideas
+- Annotated git tags (`v3.5.0`, `v4.0.0`, `v4.5.0`, `v5.0.0`, `v5.5.0`) provide traceable evolution
 - Annotated git tags and Zenodo archival provide permanent traceability
 
 ---
