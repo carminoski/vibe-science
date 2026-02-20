@@ -25,12 +25,29 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 // =====================================================================
-// Imports from lib modules
+// Imports from lib modules (dynamic — graceful if better-sqlite3 missing)
 // =====================================================================
 
-import { openDB, initDB, closeDB } from '../lib/db.js';
-import { checkPermission } from '../lib/permission-engine.js';
-import { queueForEmbedding } from '../lib/vec-search.js';
+let openDB, initDB, closeDB, checkPermission, queueForEmbedding;
+try {
+    const dbMod = await import('../lib/db.js');
+    openDB = dbMod.openDB;
+    initDB = dbMod.initDB;
+    closeDB = dbMod.closeDB;
+
+    const permMod = await import('../lib/permission-engine.js');
+    checkPermission = permMod.checkPermission;
+
+    const vecMod = await import('../lib/vec-search.js');
+    queueForEmbedding = vecMod.queueForEmbedding;
+} catch {
+    // lib modules unavailable — enforcement runs in degraded mode
+    openDB = () => null;
+    initDB = () => {};
+    closeDB = () => {};
+    checkPermission = () => ({ allowed: true });
+    queueForEmbedding = () => {};
+}
 
 // =====================================================================
 // Constants
@@ -119,6 +136,11 @@ async function main(event) {
             `Enforcement degraded -- gates and logging disabled for this tool use.\n`
         );
         // Return allow -- we never block due to infrastructure issues
+        return { exitCode: 0 };
+    }
+
+    if (!db) {
+        // better-sqlite3 not installed — degrade gracefully, no blocking
         return { exitCode: 0 };
     }
 

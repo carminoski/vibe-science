@@ -22,10 +22,18 @@
  *   via HTTP API or Python subprocess) for production quality.
  */
 
-import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+
+// Dynamic import: better-sqlite3 requires native compilation.
+let Database = null;
+try {
+    const mod = await import('better-sqlite3');
+    Database = mod.default;
+} catch {
+    // Worker cannot function without SQLite — will log and exit gracefully below
+}
 
 // =====================================================
 // Configuration
@@ -119,7 +127,7 @@ function simpleEmbedding(text, dims = EMBEDDING_DIMS) {
  * @returns {import('better-sqlite3').Database|null}
  */
 function tryOpenDB() {
-    if (!fs.existsSync(DB_PATH)) {
+    if (!Database || !fs.existsSync(DB_PATH)) {
         return null;
     }
 

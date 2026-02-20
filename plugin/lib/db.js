@@ -8,10 +8,19 @@
  * Database location: ~/.vibe-science/db/vibe-science.db
  */
 
-import Database from 'better-sqlite3';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+
+// Dynamic import: better-sqlite3 requires native compilation.
+// If unavailable, all DB functions degrade gracefully (return null/no-op).
+let Database = null;
+try {
+    const mod = await import('better-sqlite3');
+    Database = mod.default;
+} catch {
+    // better-sqlite3 not installed or native build failed — degraded mode
+}
 
 // =====================================================
 // Default paths
@@ -36,6 +45,8 @@ const DEFAULT_SCHEMA_PATH = path.join(
  * @returns {import('better-sqlite3').Database} The database instance
  */
 export function openDB(dbPath = DEFAULT_DB_PATH) {
+    if (!Database) return null; // graceful degradation: no native module
+
     // Ensure the directory exists
     const dir = path.dirname(dbPath);
     if (!fs.existsSync(dir)) {
@@ -61,6 +72,7 @@ export function openDB(dbPath = DEFAULT_DB_PATH) {
  * @param {string} [schemaPath] - Path to the schema.sql file
  */
 export function initDB(db, schemaPath = DEFAULT_SCHEMA_PATH) {
+    if (!db) return; // graceful degradation
     const schema = fs.readFileSync(schemaPath, 'utf-8');
     db.exec(schema);
 }

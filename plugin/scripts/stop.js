@@ -17,9 +17,30 @@
  *   1 -- internal error
  */
 
-import { openDB, initDB, closeDB, endSession } from '../lib/db.js';
-import { generateNarrativeSummary, updateStateMdFromDB } from '../lib/narrative-engine.js';
-import { queueForEmbedding } from '../lib/vec-search.js';
+// Dynamic imports — graceful if better-sqlite3 or other native deps missing
+let openDB, initDB, closeDB, endSession, generateNarrativeSummary, updateStateMdFromDB, queueForEmbedding;
+try {
+    const dbMod = await import('../lib/db.js');
+    openDB = dbMod.openDB;
+    initDB = dbMod.initDB;
+    closeDB = dbMod.closeDB;
+    endSession = dbMod.endSession;
+
+    const narMod = await import('../lib/narrative-engine.js');
+    generateNarrativeSummary = narMod.generateNarrativeSummary;
+    updateStateMdFromDB = narMod.updateStateMdFromDB;
+
+    const vecMod = await import('../lib/vec-search.js');
+    queueForEmbedding = vecMod.queueForEmbedding;
+} catch {
+    openDB = () => null;
+    initDB = () => {};
+    closeDB = () => {};
+    endSession = () => {};
+    generateNarrativeSummary = () => 'Session summary unavailable (DB not installed).';
+    updateStateMdFromDB = () => {};
+    queueForEmbedding = () => {};
+}
 
 // =====================================================
 // Main
@@ -45,6 +66,13 @@ async function main(event) {
         return {
             exitCode: 0,
             message: `DB unavailable (${err.message}); skipping stop hook.`
+        };
+    }
+
+    if (!db) {
+        return {
+            exitCode: 0,
+            message: 'DB not available (better-sqlite3 not installed); skipping stop hook.'
         };
     }
 
