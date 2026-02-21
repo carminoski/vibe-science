@@ -1130,7 +1130,7 @@ Apache 2.0 — see [LICENSE](LICENSE).
 
 ## Authors
 
-**Vibe Science Contributors**
+**Carmine Russo, Elisa Bertelli (MD)**
 
 ---
 
