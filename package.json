@@ -4,14 +4,17 @@
   "description": "Vibe Science v6.0 NEXUS — Claude Code plugin for scientific research with infrastructure-enforced gates, persistent memory, and agent team permissions.",
   "type": "module",
   "scripts": {
-    "setup": "node plugin/scripts/setup.js"
+    "setup": "node plugin/scripts/setup.js",
+    "worker": "node plugin/scripts/worker-embed.js"
   },
   "dependencies": {
-    "better-sqlite3": "^11.7.0"
+    "better-sqlite3": "^11.7.0",
+    "@huggingface/transformers": "^3.4.0",
+    "onnxruntime-node": "^1.21.0"
   },
   "engines": {
     "node": ">=18.0.0"
   },
   "license": "MIT",
-  "author": "Carmine Russo"
+  "author": "Vibe Science Contributors"
 }

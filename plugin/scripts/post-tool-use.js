@@ -53,9 +53,6 @@ try {
 // Constants
 // =====================================================================
 
-/** Gates required before a claim can be written to CLAIM-LEDGER */
-const REQUIRED_CLAIM_GATES = ['DQ1', 'DQ2', 'DQ3', 'DQ4'];
-
 /** How often (in tool uses) to run observer checks */
 const OBSERVER_INTERVAL = 10;
 
@@ -598,14 +595,16 @@ function isApproximateMatch(a, b) {
 
 /**
  * Extract a claim ID from text content.
- * Claim IDs follow the pattern: C-NNN or CLAIM-NNN.
+ * Claim IDs follow the pattern: CNNN, C-NNN, or CLAIM-NNN.
+ * The compact format (C001) is used by gate-engine.js; the hyphenated
+ * format (C-001) is a legacy variant.  Both are accepted.
  *
  * @param {string} content
  * @returns {string|null}
  */
 function extractClaimId(content) {
     if (!content) return null;
-    const match = content.match(/\b(C-\d{1,6}|CLAIM-\d{1,6})\b/i);
+    const match = content.match(/\b(C-?\d{1,6}|CLAIM-\d{1,6})\b/i);
     return match ? match[1].toUpperCase() : null;
 }
 

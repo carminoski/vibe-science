@@ -54,19 +54,12 @@ abstract: >-
   review — including one with OR=2.30 and p < 10^-100 whose sign reversed under
   propensity matching.
 authors:
-  - family-names: Russo
-    given-names: Carmine
-    email: carmine.russo@gmail.com
-    alias: th3vib3coder
-  - family-names: Bertelli
-    given-names: Elisa
-    email: elisabertel@gmail.com
-    name-suffix: MD
+  - name: Vibe Science Contributors
 version: "6.0.0"
 date-released: "2026-02-20"
 doi: "10.5281/zenodo.18665031"
 license: Apache-2.0
-repository-code: "https://github.com/th3vib3coder/vibe-science"
+repository-code: "https://github.com/vibe-science-contributors/vibe-science"
 keywords:
   - scientific-research
   - ai-agent
@@ -96,10 +89,7 @@ references:
   - type: article
     title: "Vibe Science: AI-native research with adversarial review and serendipity tracking"
     authors:
-      - family-names: Russo
-        given-names: Carmine
-      - family-names: Bertelli
-        given-names: Elisa
+      - name: Vibe Science Contributors
     year: 2026
     conference:
       name: "VibeX 2026"

@@ -29,7 +29,7 @@ export const PERMISSIONS = {
         allow_write_only: ['05-reviewer2/'],           // can only write inside own directory
     },
     judge: {
-        allow: ['Read', 'Glob', 'Grep'],
+        allow: ['Read', 'Glob', 'Grep', 'Write'],
         deny_files: ['CLAIM-LEDGER.md', '05-reviewer2/*'],
         deny_patterns: [],
         allow_write_only: ['05-reviewer2/judge-reports/'],

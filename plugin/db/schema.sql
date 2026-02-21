@@ -170,7 +170,8 @@ CREATE TABLE IF NOT EXISTS calibration_log (
     r2_verdict TEXT,
     stage_at_resolution INTEGER,
     session_id TEXT NOT NULL,
-    timestamp TEXT NOT NULL
+    timestamp TEXT NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES sessions(id)
 );
 CREATE INDEX IF NOT EXISTS idx_calibration_claim ON calibration_log(claim_id);
 
@@ -183,8 +184,10 @@ CREATE TABLE IF NOT EXISTS prompt_log (
     session_id TEXT NOT NULL,
     agent_role TEXT,
     prompt_hash TEXT NOT NULL,  -- SHA-256, non il prompt intero (privacy)
-    timestamp TEXT NOT NULL
+    timestamp TEXT NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES sessions(id)
 );
+CREATE INDEX IF NOT EXISTS idx_prompt_session ON prompt_log(session_id);
 
 -- =====================================================
 -- EMBEDDINGS: sqlite-vec virtual table

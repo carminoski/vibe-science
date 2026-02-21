@@ -1,8 +1,8 @@
 {
-  "name": "th3vib3coder-vibe-science",
+  "name": "vibe-science",
   "owner": {
-    "name": "th3vib3coder",
-    "email": "th3vib3coder@github.com"
+    "name": "vibe-science-contributors",
+    "email": "vibe-science@users.noreply.github.com"
   },
   "metadata": {
     "description": "Vibe Science v6.0 NEXUS — AI-native research engine with plugin-enforced integrity",

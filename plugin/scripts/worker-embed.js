@@ -48,11 +48,25 @@ const GLOBAL_DIR = path.join(os.homedir(), '.vibe-science');
 const DB_DIR = path.join(GLOBAL_DIR, 'db');
 const DB_PATH = path.join(DB_DIR, 'vibe-science.db');
 const LOG_DIR = path.join(GLOBAL_DIR, 'logs');
-const LOG_PATH = path.join(LOG_DIR, 'worker.log');
+function getLogPath() {
+    const date = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+    return path.join(LOG_DIR, `worker-${date}.log`);
+}
 const SCHEMA_PATH = path.join(
     import.meta.dirname ?? path.dirname(new URL(import.meta.url).pathname),
     '..', 'db', 'schema.sql'
 );
+
+// =====================================================
+// ML Model State (lazy loading)
+// =====================================================
+
+const EMBEDDINGS_CACHE_DIR = path.join(GLOBAL_DIR, 'embeddings');
+const MODEL_NAME = 'Xenova/all-MiniLM-L6-v2';
+
+let embeddingPipeline = null;
+let modelReady = false;
+let modelLoadError = null;
 
 // =====================================================
 // Logging
@@ -75,7 +89,7 @@ function log(level, message) {
     }
 
     try {
-        fs.appendFileSync(LOG_PATH, line);
+        fs.appendFileSync(getLogPath(), line);
     } catch {
         // If we can't write the log file, at least write to stderr
     }
@@ -88,9 +102,9 @@ function log(level, message) {
 // =====================================================
 
 /**
- * Generate a simple deterministic embedding based on character hashing.
- * NOT a real semantic embedding -- placeholder until a proper model
- * (all-MiniLM-L6-v2 or similar) is integrated.
+ * FALLBACK: Generate a simple deterministic embedding based on character hashing.
+ * NOT a real semantic embedding -- used as fallback when the transformer
+ * model (all-MiniLM-L6-v2) fails to load.
  *
  * The output is a normalized Float32Array of the specified dimensionality.
  *
@@ -114,6 +128,71 @@ function simpleEmbedding(text, dims = EMBEDDING_DIMS) {
     }
 
     return embedding;
+}
+
+/**
+ * Lazily load the embedding model using @huggingface/transformers.
+ * Downloads quantized model (~23MB) to EMBEDDINGS_CACHE_DIR on first run.
+ * Non-blocking: if loading fails, the worker continues with hash fallback.
+ */
+async function loadEmbeddingModel() {
+    try {
+        if (!fs.existsSync(EMBEDDINGS_CACHE_DIR)) {
+            fs.mkdirSync(EMBEDDINGS_CACHE_DIR, { recursive: true });
+        }
+
+        log('INFO', `Loading embedding model: ${MODEL_NAME}...`);
+
+        const { pipeline, env } = await import('@huggingface/transformers');
+
+        // Configure cache directory
+        env.cacheDir = EMBEDDINGS_CACHE_DIR;
+        // Disable remote model fetching after first download (optional)
+        // env.allowRemoteModels = true;
+
+        embeddingPipeline = await pipeline('feature-extraction', MODEL_NAME, {
+            quantized: true,
+            progress_callback: (progress) => {
+                if (progress.status === 'download' && progress.progress) {
+                    log('INFO', `Model download: ${Math.round(progress.progress)}%`);
+                }
+            },
+        });
+
+        modelReady = true;
+        log('INFO', 'Real embeddings active — model loaded successfully.');
+    } catch (err) {
+        modelLoadError = err;
+        modelReady = false;
+        log('WARN', `Embedding model failed to load: ${err.message}. Continuing with hash fallback.`);
+    }
+}
+
+/**
+ * Generate a real semantic embedding using the loaded transformer model.
+ *
+ * @param {string} text - The text to embed
+ * @returns {Promise<Float32Array>} 384-dimensional normalized embedding
+ */
+async function realEmbedding(text) {
+    const output = await embeddingPipeline(text, {
+        pooling: 'mean',
+        normalize: true,
+    });
+    return new Float32Array(output.data);
+}
+
+/**
+ * Compute embedding vector: uses real model if available, hash fallback otherwise.
+ *
+ * @param {string} text - The text to embed
+ * @returns {Promise<Float32Array>} Embedding vector (384 dims)
+ */
+async function embed(text) {
+    if (modelReady && embeddingPipeline) {
+        return realEmbedding(text);
+    }
+    return simpleEmbedding(text);
 }
 
 // =====================================================
@@ -224,8 +303,8 @@ function fetchPending(db) {
  * @param {object} entry - Row from embed_queue
  * @param {boolean} useVec - Whether vec_memories is available
  */
-function processEntry(db, entry, useVec) {
-    const embedding = simpleEmbedding(entry.text);
+async function processEntry(db, entry, useVec) {
+    const embedding = await embed(entry.text);
     const embeddingBuf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
 
     // Extract project_path from metadata if available
@@ -259,12 +338,15 @@ function processEntry(db, entry, useVec) {
 
 /**
  * Process one batch of pending entries.
+ * Phase 1: Generate embeddings asynchronously (non-blocking).
+ * Phase 2: Write all results to DB in a single sync transaction.
+ *
  * Returns the number of entries processed.
  *
  * @param {import('better-sqlite3').Database} db
- * @returns {number}
+ * @returns {Promise<number>}
  */
-function processBatch(db) {
+async function processBatch(db) {
     const pending = fetchPending(db);
     if (pending.length === 0) {
         return 0;
@@ -272,31 +354,69 @@ function processBatch(db) {
 
     const useVec = isVecAvailable(db);
 
-    // Use a transaction for the entire batch (atomicity + performance)
-    const processAll = db.transaction(() => {
+    // Phase 1: Generate embeddings (async, potentially using real model)
+    const results = [];
+    for (const entry of pending) {
+        try {
+            const embedding = await embed(entry.text);
+            const embeddingBuf = Buffer.from(embedding.buffer, embedding.byteOffset, embedding.byteLength);
+
+            let projectPath = null;
+            if (entry.metadata) {
+                try {
+                    const meta = JSON.parse(entry.metadata);
+                    projectPath = meta.project_path ?? null;
+                } catch { /* ignore malformed metadata */ }
+            }
+
+            results.push({ entry, embeddingBuf, projectPath, error: null });
+        } catch (err) {
+            results.push({ entry, embeddingBuf: null, projectPath: null, error: err });
+        }
+    }
+
+    // Phase 2: Write to DB in a single transaction (sync, fast)
+    const writeAll = db.transaction(() => {
         let processed = 0;
-        for (const entry of pending) {
+        for (const { entry, embeddingBuf, projectPath, error } of results) {
+            if (error) {
+                log('WARN', `Failed to embed entry ${entry.id}: ${error.message}`);
+                try {
+                    db.prepare(`UPDATE embed_queue SET processed = -1 WHERE id = ?`).run(entry.id);
+                } catch { /* ignore */ }
+                continue;
+            }
+
             try {
-                processEntry(db, entry, useVec);
+                if (useVec) {
+                    db.prepare(
+                        `INSERT INTO vec_memories (embedding, text, metadata, project_path, created_at)
+                         VALUES (?, ?, ?, ?, ?)`
+                    ).run(embeddingBuf, entry.text, entry.metadata, projectPath, entry.created_at);
+                } else {
+                    db.prepare(
+                        `INSERT INTO memory_embeddings (text, embedding, metadata, project_path, created_at)
+                         VALUES (?, ?, ?, ?, ?)`
+                    ).run(entry.text, embeddingBuf, entry.metadata, projectPath, entry.created_at);
+                }
+
+                db.prepare(`UPDATE embed_queue SET processed = 1 WHERE id = ?`).run(entry.id);
                 processed++;
             } catch (err) {
-                log('WARN', `Failed to process embed_queue entry ${entry.id}: ${err.message}`);
-                // Mark as processed anyway to avoid infinite retry loops.
-                // A more sophisticated system would use a retry counter.
+                log('WARN', `Failed to write entry ${entry.id} to DB: ${err.message}`);
                 try {
-                    db.prepare(
-                        `UPDATE embed_queue SET processed = -1 WHERE id = ?`
-                    ).run(entry.id);
+                    db.prepare(`UPDATE embed_queue SET processed = -1 WHERE id = ?`).run(entry.id);
                 } catch { /* ignore */ }
             }
         }
         return processed;
     });
 
-    const count = processAll();
+    const count = writeAll();
     if (count > 0) {
         const target = useVec ? 'vec_memories' : 'memory_embeddings';
-        log('INFO', `Processed ${count}/${pending.length} entries -> ${target}`);
+        const mode = modelReady ? 'real' : 'hash-fallback';
+        log('INFO', `Processed ${count}/${pending.length} entries -> ${target} [${mode}]`);
     }
     return count;
 }
@@ -313,7 +433,7 @@ let running = true;
  * One iteration of the poll loop.
  * Opens the DB if needed, processes a batch, schedules next iteration.
  */
-function tick() {
+async function tick() {
     if (!running) return;
 
     // Try to open DB if we don't have a connection
@@ -328,7 +448,7 @@ function tick() {
     }
 
     try {
-        processBatch(db);
+        await processBatch(db);
     } catch (err) {
         log('ERROR', `Batch processing error: ${err.message}`);
 
@@ -389,8 +509,11 @@ process.on('unhandledRejection', (reason) => {
 
 log('INFO', '=== Vibe Science v6.0 NEXUS Embedding Worker started ===');
 log('INFO', `DB path:   ${DB_PATH}`);
-log('INFO', `Log path:  ${LOG_PATH}`);
+log('INFO', `Log dir:   ${LOG_DIR}`);
 log('INFO', `Poll interval: ${POLL_INTERVAL_MS}ms | Batch size: ${BATCH_SIZE} | Dims: ${EMBEDDING_DIMS}`);
+
+// Start loading embedding model in background (non-blocking)
+loadEmbeddingModel();
 
 // Start the polling loop
 tick();

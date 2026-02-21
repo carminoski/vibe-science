@@ -172,6 +172,7 @@ async function main(event) {
             relevantMemories = vecSearch(db, prompt.substring(0, 500), {
                 project_path: projectPath,
                 limit: 3,
+                maxTokens: 500,
             });
         } catch (err) {
             // Vec search may fail if sqlite-vec is not loaded or embeddings

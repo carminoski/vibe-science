@@ -130,13 +130,10 @@ export function checkClaimGates(db, claimId) {
     // Query all PASS entries for this claim
     let passedGates = [];
     try {
-        const rows = db.all
-            ? db.all(
-                  `SELECT DISTINCT gate_id FROM gate_checks
-                   WHERE claim_id = ? AND status = 'PASS'`,
-                  claimId,
-              )
-            : [];
+        const rows = db.prepare(
+            `SELECT DISTINCT gate_id FROM gate_checks
+             WHERE claim_id = ? AND status = 'PASS'`
+        ).all(claimId);
         passedGates = rows.map(r => r.gate_id);
     } catch {
         // If DB is unavailable, fail open with a warning
@@ -421,12 +418,9 @@ export function hasLiteratureSearch(sessionId, db) {
     if (!db || !sessionId) return false;
 
     try {
-        const row = db.get
-            ? db.get(
-                  `SELECT COUNT(*) as n FROM literature_searches WHERE session_id = ?`,
-                  sessionId,
-              )
-            : null;
+        const row = db.prepare(
+            `SELECT COUNT(*) as n FROM literature_searches WHERE session_id = ?`
+        ).get(sessionId);
         return row && row.n > 0;
     } catch {
         // Table might not exist yet — fail open
