@@ -176,7 +176,7 @@ Every intermediate result, every decision, every pivot, every kill MUST be writt
 - Exploring a scientific hypothesis requiring literature validation
 - Searching for research gaps ("blue ocean") in a domain
 - Validating theoretical ideas against existing data
-- Running scRNA-seq / omics analysis pipelines with quality assurance
+- Running domain-specific analysis pipelines with quality assurance (genomics, photonics, materials, etc.)
 - Running computational experiments with systematic variation (tree search)
 - Finding unexpected connections (serendipity mode)
 - Generating and testing novel research hypotheses
@@ -385,7 +385,7 @@ Techniques applied systematically:
 
 For each gap found, assess:
 - Is this gap real or just my ignorance? (check with targeted search)
-- Is anyone already working on this? (check preprints: biorxiv, medrxiv)
+- Is anyone already working on this? (check preprints: arXiv, bioRxiv, medrxiv, domain preprint servers)
 - Why hasn't this been done? (technical limitation? lack of data? not interesting enough?)
 
 Output: `00-brainstorm/gaps.md` with ranked list of identified gaps
@@ -394,10 +394,10 @@ Output: `00-brainstorm/gaps.md` with ranked list of identified gaps
 
 `NO DATA = NO GO.` This step kills beautiful hypotheses that can't be tested.
 
-Dispatch to: `geo-database`, `cellxgene-census`, `openalex-database`, and domain-specific database skills
+Dispatch to: `openalex-database` + domain-specific database skills (see Domain Examples below)
 
 For each promising gap:
-- Does public data exist to investigate it? Search GEO, CellxGene, ENCODE, TCGA, etc.
+- Does public data exist to investigate it? Search domain-relevant repositories.
 - What format is it in? How much preprocessing is needed?
 - Is the sample size sufficient for the intended analysis?
 - Are there confounders or batch effects that would invalidate the approach?
@@ -785,7 +785,7 @@ Each node in the tree is a full OTAE cycle record containing identity, type/stag
 ### Pipeline Gates (G0-G6)
 ```
 G0 (Input Sanity):     Data exists, format correct, no corruption
-G1 (Schema):           AnnData/dataframe schema matches expectation
+G1 (Schema):           Data schema matches expectation (dataframe, AnnData, tensor, etc.)
 G2 (Design):           Pipeline design reviewed, no circular deps
 G3 (Training):         Loss converging, no NaN, gradients healthy
 G4 (Metrics):          Primary metric computed, baseline compared, multi-seed
@@ -797,7 +797,7 @@ G6 (VLM Validation):   Figures readable, axes labeled, trends match metrics
 ### Literature Gates (L-1, L0-L2)
 ```
 L-1 (Lit Pre-Check):   Prior art searched BEFORE committing to direction. NEW in v5.5.
-                         PubMed + bioRxiv + arXiv for exact intersection + components.
+                         Search domain-relevant databases + arXiv/preprint servers.
                          Prior work → PIVOT or DIFFERENTIATE (explicit, documented).
 L0 (Source Validity):   DOI/PMID verified, peer-reviewed status confirmed
 L1 (Coverage):          >= 3 search strategies used (keyword, snowball, author trail)
@@ -955,7 +955,7 @@ Once chosen, the entire session follows that architecture. No switching mid-sess
    3a. UNDERSTAND: Clarify domain, interests, constraints with user
    3b. LANDSCAPE: Rapid literature scan, field mapping
    3c. GAPS: Blue ocean hunting (cross-domain, assumption reversal, etc.)
-   3d. DATA: Reality check — does data exist? (GEO, CellxGene, etc.)
+   3d. DATA: Reality check — does data exist? (domain-relevant repositories)
    3e. HYPOTHESES: Generate 3-5 testable, falsifiable hypotheses
    3f. TRIAGE: Score by impact × feasibility × novelty × data × serendipity
    3g. R2 REVIEW: Reviewer 2 challenges the chosen direction (BLOCKING)
@@ -1215,7 +1215,7 @@ In TEAM mode, Phase 0 is distributed:
 | UNDERSTAND | Lead + User | Lead asks the user, shares context with all |
 | LANDSCAPE | researcher | Rapid literature scan |
 | GAPS | researcher + serendipity | Both hunt for gaps from different angles |
-| DATA | researcher | Data audit via GEO, CellxGene, etc. |
+| DATA | researcher | Data audit via domain-relevant repositories |
 | HYPOTHESES | researcher | Generates hypotheses |
 | TRIAGE | lead | Synthesizes, scores, presents to user |
 | R2 REVIEW | **reviewer2** | Reviews brainstorm output — genuinely independent! |
@@ -1286,16 +1286,46 @@ Vibe Science is the **orchestrator**. It does NOT execute pipelines directly —
 | Task | Dispatch to | Vibe Gate |
 |------|------------|-----------|
 | **Scientific brainstorming** | **scientific-brainstorming + hypothesis-generation skills** | **B0** |
-| **Dataset discovery** | **geo-database, cellxgene-census, openalex-database skills** | **B0** |
-| Literature search | pubmed, openalex, biorxiv skills | L0 |
-| scRNA-seq QC | scanpy skill | G0-G1 |
-| Batch integration | scvi-tools skill | G2-G3 |
-| Clustering/DE | scanpy, pydeseq2 skills | G4 |
+| **Dataset discovery** | **openalex-database + domain-specific database skills** | **B0** |
+| Literature search | pubmed, openalex, arXiv, domain preprint skills | L0 |
+| Data QC & preprocessing | domain-appropriate analysis skill | G0-G1 |
+| Modeling / integration | domain-appropriate ML/analysis skill | G2-G3 |
+| Analysis / comparison | domain-appropriate statistical skill | G4 |
 | Visualization | scientific-visualization skill | G5, G6 |
-| Database queries | GEO, Ensembl, UniProt, KEGG skills | varies |
+| Database queries | domain-specific database skills | varies |
 | ML experiments | pytorch-lightning, scikit-learn skills | G3-G4 |
 | Statistical analysis | statsmodels, statistical-analysis skills | G4 |
 | Report generation | internal (templates.md) | G5 |
+
+### Domain Examples
+
+Vibe Science is domain-agnostic — the OTAE loop, gates, and R2 ensemble work for any scientific field. The system infers the research domain from context and adapts tool dispatch accordingly. Below are examples for common domains:
+
+**Genomics / scRNA-seq:**
+| Task | Dispatch to | Gate |
+|------|------------|------|
+| Dataset discovery | geo-database, cellxgene-census skills | B0 |
+| scRNA-seq QC | scanpy skill | G0-G1 |
+| Batch integration | scvi-tools skill | G2-G3 |
+| Clustering / DE | scanpy, pydeseq2 skills | G4 |
+| Database queries | GEO, Ensembl, UniProt, KEGG skills | varies |
+| Data repositories | GEO, CellxGene, ENCODE, TCGA | — |
+
+**Photonics / Optical Engineering:**
+| Task | Dispatch to | Gate |
+|------|------------|------|
+| Literature search | openalex, arXiv (physics.optics), IEEE Xplore | L0 |
+| Simulation | domain scripts, MATLAB skill | G2-G4 |
+| Device physics | pymatgen, astropy skills (if applicable) | G4 |
+| Data repositories | arXiv, IEEE DataPort, Zenodo | — |
+
+**Materials Science / Chemistry:**
+| Task | Dispatch to | Gate |
+|------|------------|------|
+| Dataset discovery | pubchem-database, chembl-database skills | B0 |
+| Molecular analysis | rdkit, deepchem, datamol skills | G0-G4 |
+| Protein structure | esm, pdb-database, alphafold-database skills | varies |
+| Data repositories | PubChem, ChEMBL, Materials Project, ZINC | — |
 
 ### Internal (no dispatch):
 Claim extraction, confidence scoring, reviewer ensemble, gate checking, obs normalization, decision logging, tree management, node selection, stage transitions, serendipity triage, run comparison
@@ -1325,7 +1355,7 @@ Load ONLY when needed. Never load all at once.
 | Audit & Reproducibility | `protocols/audit-reproducibility.md` | Run manifests, provenance |
 | Writeup Engine | `protocols/writeup-engine.md` | Stage 5, paper drafting |
 | All Gates | `gates/gates.md` | EVALUATE phase (gate application) |
-| Obs Normalizer | `assets/obs-normalizer.md` | ACT-analyze (scRNA data) |
+| Obs Normalizer | `assets/obs-normalizer.md` | ACT-analyze (tabular/observation data) |
 | Node Schema | `assets/node-schema.md` | Tree mode init, node creation |
 | Stage Prompts | `assets/stage-prompts.md` | Stage-specific node generation |
 | Metric Parser | `assets/metric-parser.md` | ACT-experiment (metric extraction) |
