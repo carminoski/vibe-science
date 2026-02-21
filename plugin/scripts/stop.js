@@ -48,7 +48,17 @@ try {
 
 async function main(event) {
     const sessionId = event.session_id ?? event.sessionId ?? null;
-    const projectPath = event.project_path ?? event.projectPath ?? process.cwd();
+    const projectPath = event.cwd ?? event.project_path ?? process.cwd();
+
+    // Guard against infinite loops: if Claude is already continuing from a
+    // previous stop hook block, allow the stop to proceed unconditionally.
+    // Per Claude Code spec: stop_hook_active = true means this is a re-entry.
+    if (event.stop_hook_active) {
+        return {
+            exitCode: 0,
+            message: 'stop_hook_active detected — allowing stop to prevent infinite loop.'
+        };
+    }
 
     if (!sessionId) {
         return {
@@ -135,15 +145,16 @@ async function main(event) {
               AND ce.event_type = 'CREATED'
               AND ce.claim_id NOT IN (
                   SELECT claim_id FROM claim_events
-                  WHERE event_type IN ('R2_REVIEWED', 'KILLED', 'DISPUTED')
+                  WHERE session_id = ?
+                    AND event_type IN ('R2_REVIEWED', 'KILLED', 'DISPUTED')
               )
-        `).all(sessionId);
+        `).all(sessionId, sessionId);
 
         if (unreviewedClaims.length > 0) {
             const claimIds = unreviewedClaims.map(c => c.claim_id).join(', ');
             return {
                 exitCode: 2,
-                message: `STOP BLOCKED: ${unreviewedClaims.length} claims senza R2 review: ${claimIds}. LAW 4: R2 is co-pilot.`,
+                message: `STOP BLOCKED: ${unreviewedClaims.length} unreviewed claims without R2 review: ${claimIds}. LAW 4: R2 is co-pilot.`,
                 narrative: summary.text,
                 stats: {
                     total_actions: spineEntries.length,

@@ -17,8 +17,8 @@
  *   2 = advisory feedback (tool already ran; stderr shown to Claude as feedback)
  *   1 = internal error (non-blocking, logged)
  *
- * stdin:  JSON { tool_name, tool_input, tool_output, session_id, agent_role }
- * stdout: JSON { exitCode, ?stderr }
+ * stdin:  JSON { tool_name, tool_input, tool_response, session_id, cwd, hook_event_name }
+ * stdout: not used (exit 0 = allow; exit 2 = advisory feedback via stderr)
  */
 
 import fs from 'node:fs';
@@ -126,15 +126,17 @@ process.stdin.on('end', () => {
 
 /**
  * @param {object} event
- * @param {string} event.tool_name   - Tool that was invoked (Write, Edit, Bash, etc.)
- * @param {object} event.tool_input  - Tool input payload
- * @param {string} event.tool_output - Tool output (may be large; we summarize)
- * @param {string} event.session_id  - Current session UUID
- * @param {string} [event.agent_role] - Agent role in TEAM mode (null in SOLO)
+ * @param {string} event.tool_name      - Tool that was invoked (Write, Edit, Bash, etc.)
+ * @param {object} event.tool_input     - Tool input payload
+ * @param {object} event.tool_response  - Tool response (per Claude Code spec: object, not string)
+ * @param {string} event.session_id     - Current session UUID
+ * @param {string} [event.agent_role]   - Agent role in TEAM mode (null in SOLO; vibe-science custom field)
  * @returns {Promise<{exitCode: number, stderr?: string}>}
  */
 async function main(event) {
-    const { tool_name, tool_input = {}, tool_output = '', session_id, agent_role } = event;
+    const { tool_name, tool_input = {}, tool_response, session_id, agent_role } = event;
+    // Claude Code spec field is `tool_response` (object). Convert to string for pattern matching.
+    const tool_output = typeof tool_response === 'string' ? tool_response : JSON.stringify(tool_response ?? '');
 
     // ------------------------------------------------------------------
     // Open DB (graceful: if DB is unavailable, log warning but don't block)
@@ -225,7 +227,8 @@ async function main(event) {
  * @param {object} event
  */
 function detectAndLogLiteratureSearch(db, event) {
-    const { tool_name, tool_input = {}, tool_output = '', session_id } = event;
+    const { tool_name, tool_input = {}, tool_response, session_id } = event;
+    const tool_output = typeof tool_response === 'string' ? tool_response : JSON.stringify(tool_response ?? '');
 
     let isLitSearch = false;
     let query = '';
@@ -887,7 +890,8 @@ function enforcePermissions(event) {
  * @param {object} event
  */
 function autoLog(db, event) {
-    const { tool_name, tool_input = {}, tool_output = '', session_id, agent_role } = event;
+    const { tool_name, tool_input = {}, tool_response, session_id, agent_role } = event;
+    const tool_output = typeof tool_response === 'string' ? tool_response : JSON.stringify(tool_response ?? '');
 
     if (!session_id) return;
 

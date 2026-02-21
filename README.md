@@ -122,9 +122,8 @@ This way, Vibe Science loads only when you open Claude Code in that project dire
 
 After launching Claude Code with the plugin, you should see:
 
-1. **Setup hook runs** — creates `~/.vibe-science/` directory, initializes the SQLite database
-2. **SessionStart message** — injects research context (~700 tokens)
-3. **The `/vibe` skill is available** — type `/vibe` to start a research session
+1. **SessionStart hook runs** — auto-creates `~/.vibe-science/` directory and SQLite database on first run, then injects research context (~700 tokens)
+2. **The `/vibe` skill is available** — type `/vibe` to start a research session
 
 If you don't see these, check the [Troubleshooting](#troubleshooting) section.
 
@@ -420,7 +419,7 @@ Not a gate you pass — a co-pilot you can't fire. 4 specialist reviewers run a 
 </details>
 
 <details>
-<summary><b>10 Constitutional Laws</b></summary>
+<summary><b>11 Constitutional Laws</b></summary>
 
 These laws apply to ALL agents, ALL modes. No agent, protocol, or user request can override them.
 
@@ -436,6 +435,7 @@ These laws apply to ALL agents, ALL modes. No agent, protocol, or user request c
 | 8 | EXPLORE BEFORE EXPLOIT | Minimum 3 draft nodes before any is promoted |
 | 9 | CONFOUNDER HARNESS | Raw → Conditioned → Matched. Sign change = ARTIFACT. |
 | 10 | CRYSTALLIZE OR LOSE | Not in a file = doesn't exist |
+| 11 | LISTEN TO THE USER | User corrections are immediate and non-negotiable |
 
 </details>
 
