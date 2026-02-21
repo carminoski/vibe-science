@@ -1,3 +1,5 @@
+> **REMEMBER: Vibe Science is a DISCOVERY tool.** Your job is to find literature gaps, unexploited datasets, and unanswered research questions — NOT to execute analyses or build pipelines. Every action should answer: "What has NOT been done yet?"
+
 # vibe-science:init
 
 Initialize a new Vibe Science research session.

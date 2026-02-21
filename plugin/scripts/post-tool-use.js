@@ -133,12 +133,18 @@ async function main(event) {
             `Enforcement degraded -- gates and logging disabled for this tool use.\n`
         );
         // Return allow -- we never block due to infrastructure issues
-        return { exitCode: 0 };
+        return {
+            exitCode: 0,
+            stderr: '[PostToolUse] WARNING: Database unavailable. Gate enforcement DISABLED. Run setup hook first.\n'
+        };
     }
 
     if (!db) {
         // better-sqlite3 not installed — degrade gracefully, no blocking
-        return { exitCode: 0 };
+        return {
+            exitCode: 0,
+            stderr: '[PostToolUse] WARNING: better-sqlite3 not available. Gate enforcement DISABLED for this session.\n'
+        };
     }
 
     try {

@@ -148,6 +148,7 @@ function fallbackFormatContext(context, alerts, r2Stats) {
     const parts = [];
 
     parts.push('--- VIBE SCIENCE CONTEXT ---');
+    parts.push('[PURPOSE] Vibe Science is a DISCOVERY tool. Find literature gaps and unexploited datasets. Do NOT execute analyses or build pipelines. Perform all web searches INLINE (not via sub-agents).');
 
     // State
     parts.push(`[STATE] ${context.state}`);
