@@ -1,4 +1,4 @@
-> **REMEMBER: Vibe Science is a DISCOVERY tool.** Your job is to find literature gaps, unexploited datasets, and unanswered research questions — NOT to execute analyses or build pipelines. Every action should answer: "What has NOT been done yet?"
+> **REMEMBER: Think first, analyse second.** Before any analysis, know what exists in the literature and what gaps remain. Every analysis must answer something that has NOT been done yet. If you cannot explain in one sentence what new thing it will reveal, you are not ready to run it.
 
 # vibe-science:init
 

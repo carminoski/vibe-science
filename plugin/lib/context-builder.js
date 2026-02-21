@@ -143,7 +143,7 @@ export function formatContextForInjection(context, alerts, r2Stats) {
     const effectiveR2 = r2Stats ?? context.r2Calibration ?? {};
 
     parts.push('--- VIBE SCIENCE CONTEXT ---');
-    parts.push('[PURPOSE] Vibe Science is a DISCOVERY tool. Find literature gaps and unexploited datasets. Do NOT execute analyses or build pipelines. Perform all web searches INLINE (not via sub-agents).');
+    parts.push('[PURPOSE] Think first, analyse second. Know the literature gaps before running any analysis. Every analysis must answer something not yet done. Web searches INLINE only (not via sub-agents).');
 
     // --- State ---
     parts.push(`[STATE] ${context.state ?? 'No state available.'}`);
