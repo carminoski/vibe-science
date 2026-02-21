@@ -130,12 +130,17 @@ All Vibe Science state lives in `.vibe-science/` at the project root:
 
 ## HOOKS ENFORCEMENT
 
-This project has hooks configured in `plugin/hooks/hooks.json`. These are the **actually implemented** hooks:
+**Dual-config strategy:** Hooks are defined in TWO places for different use cases:
+- `.claude/settings.json` — project-level hooks for **dev mode** (working within this repo). Uses `$CLAUDE_PROJECT_DIR`.
+- `plugin/hooks/hooks.json` — plugin hooks for **installed mode** (when vibe-science is installed as a Claude Code plugin via marketplace). Uses `${CLAUDE_PLUGIN_ROOT}`.
 
-- **Setup hook** (`setup.js`): Runs once on first install. Creates `~/.vibe-science/` directory tree, initializes SQLite database, checks for Bun runtime, installs dependencies, launches embedding worker daemon.
-- **SessionStart hook** (`session-start.js`): Runs at every session start. Opens DB, creates session record (UUID), builds progressive context (state snapshot, observer alerts, R2 calibration data, pending serendipity seeds), injects ~700-token context string into the agent's system prompt.
-- **UserPromptSubmit hook** (`prompt-submit.js`): Runs before each user prompt is processed. Identifies agent role (from explicit role or prompt keywords), logs prompt hash to DB (privacy-preserving), performs semantic recall via vector search on first 500 chars of prompt, returns recalled memories as additional context.
-- **PostToolUse hook** (`post-tool-use.js`): Runs after every tool invocation. Central enforcement point with 4 sections: (1) Gate enforcement — DQ4 sync check (FINDINGS.md vs JSON source), CLAIM-LEDGER prerequisite gates, L-1+ literature search gate for direction nodes; (2) Permission enforcement — role-based access control in TEAM mode; (3) Auto-logging — research spine entries + embedding queue; (4) Observer checks — periodic project health (stale STATE.md, FINDINGS/JSON desync, orphaned data, design-execution drift, literature staleness). Can BLOCK (exit code 2) on gate failures.
-- **Stop hook** (`stop.js`): Runs when agent is about to end session. (1) Generates template-based narrative summary, saves to DB + embed queue; (2) Enforcement check — blocks stop if unreviewed claims exist (LAW 4: R2 is co-pilot); (3) State export — updates `.vibe-science/STATE.md` from DB for resumability (LAW 7).
+Both point to the same scripts in `plugin/scripts/`. The "Setup" event does not exist in Claude Code — auto-setup runs inside `session-start.js` instead.
+
+These are the **actually implemented** hooks:
+
+- **SessionStart hook** (`session-start.js`): Runs at every session start. Auto-runs setup if DB doesn't exist. Opens DB, creates session record (UUID), builds progressive context (state snapshot, observer alerts, R2 calibration data, pending serendipity seeds), injects ~700-token context string via `hookSpecificOutput.additionalContext`.
+- **UserPromptSubmit hook** (`prompt-submit.js`): Runs before each user prompt is processed. Identifies agent role (from explicit role or prompt keywords), logs prompt hash to DB (privacy-preserving), performs semantic recall via vector search on first 500 chars of prompt, returns recalled memories via `hookSpecificOutput.additionalContext`.
+- **PostToolUse hook** (`post-tool-use.js`): Runs after every tool invocation. Central enforcement point with 4 sections: (1) Gate enforcement — DQ4 sync check (FINDINGS.md vs JSON source), CLAIM-LEDGER prerequisite gates, L-1+ literature search gate for direction nodes; (2) Permission enforcement — role-based access control in TEAM mode; (3) Auto-logging — research spine entries + embedding queue; (4) Observer checks — periodic project health (stale STATE.md, FINDINGS/JSON desync, orphaned data, design-execution drift, literature staleness). Exit code 2 + stderr provides advisory feedback to Claude (tool already ran).
+- **Stop hook** (`stop.js`): Runs when agent is about to end session. (1) Generates template-based narrative summary, saves to DB + embed queue; (2) Enforcement check — blocks stop (exit 2 + stderr) if unreviewed claims exist (LAW 4: R2 is co-pilot); (3) State export — updates `.vibe-science/STATE.md` from DB for resumability (LAW 7).
 
 All hooks degrade gracefully if the DB is unavailable (e.g., `better-sqlite3` not installed). They never hard-crash — infrastructure failure should not block the agent.

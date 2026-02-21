@@ -245,8 +245,15 @@ process.stdin.on('end', () => {
             process.exit(0);
         })
         .catch(err => {
-            // Never crash -- return minimal context on error
-            process.stderr.write(`PromptSubmit hook error: ${err.message}\n`);
+            // Never crash -- return minimal context on error with fallback JSON
+            const fallbackOutput = {
+                hookSpecificOutput: {
+                    hookEventName: 'UserPromptSubmit',
+                    additionalContext: '[AGENT ROLE] researcher',
+                },
+                systemMessage: `PromptSubmit hook error: ${err.message}`,
+            };
+            process.stdout.write(JSON.stringify(fallbackOutput));
             process.exit(0);
         });
 });

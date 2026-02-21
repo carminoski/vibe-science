@@ -187,7 +187,12 @@ async function main(event) {
 let input = '';
 process.stdin.on('data', chunk => input += chunk);
 process.stdin.on('end', () => {
-    const event = JSON.parse(input || '{}');
+    let event = {};
+    try {
+        event = JSON.parse(input || '{}');
+    } catch {
+        // Malformed stdin -- proceed with empty event
+    }
     main(event).then(result => {
         // Claude Code Stop protocol:
         //   exit 2 + stderr = block stop, stderr shown to Claude

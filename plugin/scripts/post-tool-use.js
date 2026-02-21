@@ -13,8 +13,8 @@
  *   4. OBSERVER CHECKS     (periodic project health, every 10 tool uses)
  *
  * Exit codes:
- *   0 = allow (tool action proceeds)
- *   2 = BLOCK (tool action is rejected, human-readable reason on stderr)
+ *   0 = allow (tool already ran; stdout shown in transcript mode only)
+ *   2 = advisory feedback (tool already ran; stderr shown to Claude as feedback)
  *   1 = internal error (non-blocking, logged)
  *
  * stdin:  JSON { tool_name, tool_input, tool_output, session_id, agent_role }
@@ -92,12 +92,17 @@ const DOI_PMID_PATTERNS = [
 let input = '';
 process.stdin.on('data', chunk => input += chunk);
 process.stdin.on('end', () => {
-    const event = JSON.parse(input || '{}');
+    let event = {};
+    try {
+        event = JSON.parse(input || '{}');
+    } catch {
+        // Malformed stdin -- proceed with empty event
+    }
     main(event).then(result => {
         // Claude Code PostToolUse protocol:
-        //   exit 0 = allow (stdout in transcript only)
-        //   exit 2 = block (stderr fed to Claude)
-        //   JSON {"decision":"block","reason":"..."} on stdout = block with reason
+        //   exit 0 = allow (stdout shown in transcript mode only)
+        //   exit 2 = advisory feedback (stderr shown to Claude; tool already ran, not a true block)
+        //   JSON {"decision":"block","reason":"..."} on stdout = feedback to Claude
         if (result.exitCode === 2) {
             const reason = result.stderr || result.reason || 'Gate enforcement blocked this action.';
             process.stderr.write(reason);
