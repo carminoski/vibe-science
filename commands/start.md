@@ -69,7 +69,15 @@ Look for `.vibe-science/STATE.md` in the current workspace.
 4. Gate B0 must PASS before proceeding
 5. Determine tree mode: LINEAR | BRANCHING | HYBRID
 6. Create folder structure (see SKILL.md)
-7. Populate RQ.md, STATE.md (with runtime field), PROGRESS.md, TREE-STATE.json
+7. Populate files using TEMPLATE-FIRST pattern:
+   - For each file (STATE.md, PROGRESS.md, SERENDIPITY.md, RQ.md, ASSUMPTIONS.md):
+     READ the corresponding template from `vibe-science/vibe/templates/` first,
+     then WRITE the populated version to `.vibe-science/`.
+   - STATE.md MUST keep the YAML frontmatter (rq, phase, cycle, last_updated)
+     because stop.js and narrative-engine.js parse it.
+   - PROGRESS.md MUST follow the entry format from the template:
+     `### Cycle N - HH:MM` with Action/Result/Decision/Serendipity fields.
+   - Never invent file formats — downstream hooks depend on template structure.
 8. Enter first OTAE cycle
 ```
 

@@ -1,0 +1,233 @@
+# CONFIDENCE SCORING v2.0
+# Formula quantitativa per eliminare soggettività
+
+version: "2.0"
+name: "Quantitative Confidence Scoring"
+
+# =============================================================================
+# FORMULA
+# =============================================================================
+#
+# confidence_score = (
+#     sources_score +
+#     data_score +
+#     methodology_score +
+#     reviewer2_score
+# ) / max_possible
+#
+# Range: 0.0 - 1.0
+# =============================================================================
+
+# Source Scoring
+source_weights:
+  primary_research_peer_reviewed: 1.0
+  primary_research_preprint: 0.7
+  meta_analysis_systematic_review: 0.9
+  narrative_review: 0.6
+  commentary_editorial: 0.4
+  conference_abstract: 0.5
+  thesis_dissertation: 0.6
+  book_chapter: 0.5
+  web_source_reputable: 0.3
+  web_source_unknown: 0.1
+  training_knowledge_only: 0.0
+
+source_count_bonus:
+  1_source: 0.0
+  2_sources: 0.15
+  3_sources: 0.25
+  4_plus_sources: 0.30
+
+source_independence:
+  same_research_group: 0.3  # penalty multiplier
+  same_institution: 0.5     # penalty multiplier
+  different_institutions: 1.0
+  different_countries: 1.1  # bonus multiplier
+
+# Data Accessibility Scoring
+data_accessibility:
+  raw_data_public_repo: 1.0
+  raw_data_on_request: 0.7
+  processed_data_available: 0.6
+  summary_statistics_only: 0.4
+  methodology_described: 0.3
+  no_data_access: 0.0
+
+# Methodology Clarity
+methodology_scoring:
+  fully_reproducible_with_code: 1.0
+  detailed_protocol_available: 0.8
+  standard_methods_referenced: 0.6
+  methods_briefly_described: 0.4
+  methods_unclear: 0.2
+  no_methods: 0.0
+
+# Reviewer 2 Score Integration
+reviewer2_bonus:
+  survived_adversarial: 0.20  # ULTRA-HIGH badge
+  approved_90_100: 0.15
+  approved_with_concerns_70_89: 0.10
+  major_revision_40_69: 0.00
+  rejected_0_39: -0.30  # PENALTY
+  not_reviewed: 0.00
+
+# =============================================================================
+# CONFIDENCE LEVELS
+# =============================================================================
+
+thresholds:
+  ULTRA_HIGH:
+    min_score: 0.95
+    requirements:
+      - reviewer2_badge: "SURVIVED_ADVERSARIAL"
+      - min_independent_sources: 3
+      - data_accessible: true
+      - no_contradicting_evidence: true
+    meaning: "Finding is nearly certain. Ready for high-stakes decisions."
+
+  HIGH:
+    min_score: 0.80
+    requirements:
+      - reviewer2_verdict: ["APPROVED", "APPROVED_WITH_CONCERNS"]
+      - min_independent_sources: 2
+      - at_least_one_primary_research: true
+    meaning: "Finding is well-supported. Proceed with normal caution."
+
+  MEDIUM:
+    min_score: 0.50
+    requirements:
+      - reviewer2_verdict: ["APPROVED", "APPROVED_WITH_CONCERNS", "MAJOR_REVISION"]
+      - min_sources: 1
+    meaning: "Finding has some support but needs more validation."
+
+  LOW:
+    min_score: 0.20
+    requirements: []
+    meaning: "Finding is speculative. Use only for generating hypotheses."
+
+  VERY_LOW:
+    min_score: 0.00
+    requirements: []
+    meaning: "Finding is unsubstantiated. Do not use for conclusions."
+
+# =============================================================================
+# TRAJECTORY TRACKING
+# =============================================================================
+
+trajectory:
+  file: "confidence_trajectory.jsonl"
+  format: |
+    {
+      "finding_id": "FINDING-001",
+      "cycle": 5,
+      "timestamp": "2026-02-06T10:30:00Z",
+      "score": 0.72,
+      "level": "MEDIUM",
+      "components": {
+        "sources": 0.65,
+        "data": 0.80,
+        "methodology": 0.70,
+        "reviewer2": 0.10
+      },
+      "delta_from_last": +0.12,
+      "reason": "Added second independent source (Kim 2020)"
+    }
+
+# Confidence Explosion Detection
+explosion_detection:
+  enabled: true
+  threshold: 0.30  # If confidence increases by >0.30 in 2 cycles
+  action: "TRIGGER_FORCED_REVIEWER2"
+  reason: "Rapid confidence increase may indicate confirmation bias"
+
+# Confidence Decay
+decay:
+  enabled: true
+  rate_per_month: 0.02  # 2% decay per month without new validation
+  minimum: 0.20  # Never decay below this
+  reset_on: ["new_evidence", "revalidation", "reviewer2_reapproval"]
+
+# =============================================================================
+# CALCULATION EXAMPLE
+# =============================================================================
+
+example:
+  finding: "GUIDE-seq count data suitable for OT"
+
+  sources:
+    - name: "Tsai 2015"
+      type: "primary_research_peer_reviewed"
+      weight: 1.0
+      independence: "first_source"
+    - name: "Peyré & Cuturi 2019"
+      type: "book_chapter"
+      weight: 0.5
+      independence: "different_institutions"
+
+  calculation:
+    sources_raw: (1.0 + 0.5) = 1.5
+    sources_normalized: 1.5 / 2.0 = 0.75  # max 2.0 for 2 sources
+    source_count_bonus: 0.15  # 2 sources
+    sources_score: 0.75 + 0.15 = 0.90
+
+    data_score: 0.60  # processed_data_available
+    methodology_score: 0.80  # detailed_protocol_available
+    reviewer2_score: 0.10  # approved_with_concerns
+
+    total: (0.90 + 0.60 + 0.80 + 0.10) / 4 = 0.60
+
+    # Adjusted for requirements
+    # Has reviewer2 approval: ✓
+    # Has 2 sources: ✓
+    # Has primary research: ✓
+
+    final_level: "MEDIUM"  # Score 0.60 meets MEDIUM threshold
+
+# =============================================================================
+# REPORTING
+# =============================================================================
+
+report_template: |
+  ## Confidence Assessment
+
+  **Finding:** {finding_id}
+  **Score:** {score:.2f} / 1.00
+  **Level:** {level}
+
+  ### Components
+
+  | Component | Score | Weight | Weighted |
+  |-----------|-------|--------|----------|
+  | Sources | {sources:.2f} | 0.30 | {sources_w:.2f} |
+  | Data | {data:.2f} | 0.25 | {data_w:.2f} |
+  | Methodology | {method:.2f} | 0.25 | {method_w:.2f} |
+  | Reviewer 2 | {r2:.2f} | 0.20 | {r2_w:.2f} |
+
+  ### Trajectory
+
+  {trajectory_chart}
+
+  ### To Increase Confidence
+
+  {recommendations}
+
+recommendations_by_weakness:
+  low_sources:
+    - "Add independent source from different research group"
+    - "Find primary research instead of reviews"
+    - "Verify all DOIs resolve"
+
+  low_data:
+    - "Locate raw data in public repository"
+    - "Request data from authors"
+    - "Document data accessibility status"
+
+  low_methodology:
+    - "Find detailed protocol paper"
+    - "Locate code repository"
+    - "Document reproducibility status"
+
+  low_reviewer2:
+    - "Address outstanding R2 concerns"
+    - "Request re-review after improvements"
+    - "Achieve APPROVED verdict"

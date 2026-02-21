@@ -13,8 +13,8 @@ Thumbs.db
 UPGRADE_PLAN_V2.md
 CHANGELOG_V2.md
 
-# Legacy nested directory (v1.0 artifact)
-vibe-science/
+# Legacy nested directory — now tracked (contains plugin manifest, commands, templates)
+# vibe-science/
 
 # Node modules (plugin dependencies)
 node_modules/
