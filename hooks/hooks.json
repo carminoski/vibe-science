@@ -1,5 +1,4 @@
 {
-  "description": "Vibe Science v6.0 NEXUS — lifecycle hooks for gate enforcement, context injection, and session management",
   "hooks": {
     "SessionStart": [
       {

@@ -62,27 +62,39 @@ That's it. Claude Code starts with Vibe Science loaded. You'll see a confirmatio
 
 ## Installation Methods
 
-There are three ways to use Vibe Science with Claude Code. Pick the one that fits your workflow.
+There are four ways to use Vibe Science with Claude Code. Pick the one that fits your workflow.
 
-### Method 1: `--plugin-dir` flag (Recommended for Getting Started)
+### Method 1: Marketplace (Recommended)
 
-Launch Claude Code from inside the plugin directory:
+Install directly from the GitHub marketplace — no cloning needed:
 
 ```bash
-cd /path/to/vibe-science
-claude --plugin-dir .
+# Step 1: Add the marketplace
+/plugin marketplace add th3vib3coder/vibe-science
+
+# Step 2: Install the plugin
+/plugin install vibe-science@vibe-science
+
+# Step 3: Restart Claude Code
 ```
 
-Or from anywhere, point to the plugin:
+On first startup, the SessionStart hook auto-runs setup: installs dependencies, creates the SQLite database, and you're ready to go.
+
+### Method 2: `--plugin-dir` flag (Quick Test)
+
+Clone the repo and launch Claude Code pointing to it:
 
 ```bash
-claude --plugin-dir /path/to/vibe-science
+git clone https://github.com/th3vib3coder/vibe-science.git
+cd vibe-science
+npm install
+claude --plugin-dir .
 ```
 
 **Pros:** Simple, no configuration files to edit, works immediately.
 **Cons:** You must pass the flag every time you launch Claude Code.
 
-### Method 2: Global Settings (Permanent Install)
+### Method 3: Global Settings (Permanent Install)
 
 Add Vibe Science to your Claude Code settings so it loads automatically in every session.
 
@@ -104,7 +116,7 @@ After saving, restart Claude Code. The plugin loads automatically.
 
 > **Important:** Use the full absolute path to the `vibe-science` directory (the one containing `.claude-plugin/`).
 
-### Method 3: Project-Level Settings (Per-Project)
+### Method 4: Project-Level Settings (Per-Project)
 
 Add to your project's `.claude/settings.json` to use Vibe Science only in a specific project:
 
@@ -280,9 +292,8 @@ Vibe Science v6.0 has a **dual architecture**:
 
 | Hook | When | What It Does |
 |------|------|-------------|
-| **Setup** | Plugin install | Creates `~/.vibe-science/`, initializes SQLite DB (11 tables), launches embedding worker |
-| **SessionStart** | New conversation | Builds ~700-token context, loads R2 calibration, checks for pending serendipity seeds |
-| **UserPromptSubmit** | Every user message | Identifies agent role, logs prompt hash (SHA-256, privacy-safe) |
+| **SessionStart** | New conversation | Auto-setup on first run (creates DB, installs deps). Builds ~700-token context, loads R2 calibration, checks for pending serendipity seeds |
+| **UserPromptSubmit** | Every user message | Identifies agent role, logs prompt hash (SHA-256, privacy-safe), semantic recall |
 | **PostToolUse** | Every tool action | Gate enforcement (exit code 2 = BLOCK), permission check, auto-log to Research Spine, Silent Observer |
 | **Stop** | Session end | Narrative summary, enforcement check (blocks if unreviewed claims exist) |
 
@@ -514,35 +525,51 @@ Plus: Circuit Breaker (deadlock → DISPUTED), Agent Permission Model (separatio
 ## Repository Structure
 
 ```
-vibe-science/
-├── README.md                    ← You are here
-├── ARCHITECTURE.md              ← Deep technical details, version history
-├── SKILL.md                     ← v5.5 ORO methodology (~1,300 lines)
-├── CLAUDE.md                    ← Constitution + agent instructions
-├── CHANGELOG.md                 ← Version history (v3.5 → v6.0)
-├── CITATION.cff                 ← GitHub citation metadata (DOI)
-├── LICENSE                      ← Apache 2.0
-├── NOTICE                       ← Academic citation requirement
-├── package.json                 ← Node.js dependencies
+vibe-science/                              ← Plugin root
+├── README.md                              ← You are here
+├── ARCHITECTURE.md                        ← Deep technical details, version history
+├── SKILL.md                               ← Full methodology (~1,300 lines, the "brain")
+├── CLAUDE.md                              ← Constitution + agent instructions
+├── CHANGELOG.md                           ← Version history (v3.5 → v6.0)
+├── CITATION.cff                           ← GitHub citation metadata (DOI)
+├── LICENSE                                ← Apache 2.0
+├── NOTICE                                 ← Academic citation requirement
+├── package.json                           ← Node.js dependencies
 │
-├── .claude-plugin/
-│   └── plugin.json              ← Plugin manifest
+├── .claude-plugin/                        ← Plugin manifests (ONLY manifests here)
+│   ├── plugin.json                        ← Plugin metadata (auto-discovery)
+│   └── marketplace.json                   ← Marketplace distribution config
 │
-├── plugin/                      ← v6.0 enforcement engine (~6,600 LOC)
-│   ├── hooks/hooks.json         ← 5 lifecycle hook declarations
-│   ├── scripts/                 ← Hook implementations
-│   ├── lib/                     ← Engine modules (gate, permission, etc.)
-│   └── db/                      ← Schema, literature registry, config
+├── skills/                                ← Auto-discovered by Claude Code
+│   └── vibe/
+│       └── SKILL.md                       ← Skill entry point (references full methodology)
 │
-├── protocols/                   ← 21 methodology protocols
-├── gates/                       ← 34 quality gate specifications
-├── schemas/                     ← 9 JSON validation schemas
-├── assets/                      ← Fault taxonomy, rubrics, templates
-├── commands/                    ← start.md entry point
-├── examples/                    ← Walkthrough
-├── blueprints/                  ← Architecture documents
-├── logos/                       ← Version-specific SVG logos
-└── archive/                     ← Historical versions (v3.5 → v5.5)
+├── commands/                              ← Auto-discovered by Claude Code
+│   ├── start.md                           ← Full session initialization (SOLO/TEAM)
+│   ├── init.md                            ← Initialize new research session
+│   ├── loop.md                            ← Execute one OTAE research cycle
+│   ├── search.md                          ← Literature search across databases
+│   └── reviewer2.md                       ← Invoke adversarial review
+│
+├── agents/                                ← Auto-discovered by Claude Code
+│   └── reviewer2.md                       ← Adversarial reviewer subagent
+│
+├── hooks/                                 ← Auto-discovered by Claude Code (default path)
+│   └── hooks.json                         ← 4 lifecycle hook declarations
+│
+├── plugin/                                ← v6.0 enforcement engine (~6,600 LOC)
+│   ├── scripts/                           ← Hook implementations (JS)
+│   ├── lib/                               ← Engine modules (gate, permission, etc.)
+│   └── db/                                ← Schema, literature registry, config
+│
+├── protocols/                             ← 21 methodology protocols
+├── gates/                                 ← 34 quality gate specifications
+├── schemas/                               ← 9 JSON validation schemas
+├── assets/                                ← Fault taxonomy, rubrics, templates
+├── examples/                              ← Walkthrough
+├── blueprints/                            ← Architecture documents
+├── logos/                                 ← Version-specific SVG logos
+└── archive/                               ← Historical versions (v3.5 → v5.5)
 ```
 
 ---

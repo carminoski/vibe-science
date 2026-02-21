@@ -7,7 +7,7 @@
     "email": "vibe-science@users.noreply.github.com"
   },
   "repository": "https://github.com/th3vib3coder/vibe-science",
+  "homepage": "https://github.com/th3vib3coder/vibe-science#readme",
   "license": "MIT",
-  "keywords": ["scientific-research", "literature-review", "discovery", "adversarial-review", "serendipity"],
-  "hooks": "./plugin/hooks/hooks.json"
+  "keywords": ["scientific-research", "literature-review", "discovery", "adversarial-review", "serendipity"]
 }

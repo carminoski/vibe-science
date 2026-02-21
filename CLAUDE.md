@@ -132,7 +132,7 @@ All Vibe Science state lives in `.vibe-science/` at the project root:
 
 **Dual-config strategy:** Hooks are defined in TWO places for different use cases:
 - `.claude/settings.json` — project-level hooks for **dev mode** (working within this repo). Uses `$CLAUDE_PROJECT_DIR`.
-- `plugin/hooks/hooks.json` — plugin hooks for **installed mode** (when vibe-science is installed as a Claude Code plugin via marketplace). Uses `${CLAUDE_PLUGIN_ROOT}`.
+- `hooks/hooks.json` — plugin hooks for **installed mode** (when vibe-science is installed as a Claude Code plugin via marketplace). Uses `${CLAUDE_PLUGIN_ROOT}`. Auto-discovered by Claude Code at the default path.
 
 Both point to the same scripts in `plugin/scripts/`. The "Setup" event does not exist in Claude Code — auto-setup runs inside `session-start.js` instead.
 

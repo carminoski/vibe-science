@@ -11,9 +11,9 @@
   "plugins": [
     {
       "name": "vibe-science",
-      "description": "Scientific research engine with adversarial review, 34+ quality gates, plugin-enforced integrity, and serendipity tracking.",
-      "source": "./",
-      "strict": false
+      "description": "Scientific research engine with adversarial review, 34+ quality gates, infrastructure-enforced integrity, persistent memory, and serendipity tracking.",
+      "version": "6.0.0",
+      "source": "./"
     }
   ]
 }

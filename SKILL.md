@@ -3,8 +3,8 @@ name: vibe
 description: Scientific research engine with agentic tree search. Infinite loops until discovery, rigorous tracking, adversarial review, serendipity preserved.
 license: MIT
 metadata:
-    version: "5.5.0"
-    codename: "ORO"
+    version: "6.0.0"
+    codename: "NEXUS"
     skill-author: carminoski
     architecture: OTAE-Tree (Observe-Think-Act-Evaluate inside Tree Search)
     lineage: "v3.5 TERTIUM DATUR + AI-Scientist-v2 reverse engineering"
