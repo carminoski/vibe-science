@@ -6,11 +6,12 @@
  * Executed AFTER every tool invocation by the agent.
  * This is the central enforcement point for the entire system.
  *
- * Four sections, executed in order:
- *   1. GATE ENFORCEMENT   (DQ4 sync, CLAIM-LEDGER gates, L-1+ literature)
+ * Five sections, executed in order:
+ *   0. LITERATURE DETECT   (auto-register WebSearch/WebFetch/Read with scientific patterns)
+ *   1. GATE ENFORCEMENT   (DQ4 sync, CLAIM-LEDGER gates, SALVAGENTE rule, L-1+ literature)
  *   2. PERMISSION ENFORCE  (TEAM mode role-based access control)
  *   3. AUTO-LOGGING        (Research Spine + embedding queue)
- *   4. OBSERVER CHECKS     (periodic project health, every 10 tool uses)
+ *   4. OBSERVER CHECKS     (periodic project health, seed escalation, score interrupt)
  *
  * Exit codes:
  *   0 = allow (tool already ran; stdout shown in transcript mode only)
@@ -374,6 +375,16 @@ function enforceGates(db, event) {
                             `Fix: Run the missing gate checks first, then update the ledger.`
                     };
                 }
+            }
+        }
+
+        // ---------------------------------------------------------
+        // Gate SALVAGENTE: Killed claims MUST produce serendipity seed
+        // ---------------------------------------------------------
+        if (filePath.includes('CLAIM-LEDGER') || filePath.includes('claim-ledger')) {
+            const salvResult = checkSalvagenteRule(db, session_id, tool_input);
+            if (salvResult) {
+                return salvResult; // exitCode 2
             }
         }
 
@@ -846,6 +857,118 @@ function logGateResult(db, sessionId, gateId, status, claimId, details) {
     } catch (err) {
         process.stderr.write(`[PostToolUse] WARNING: Failed to log gate ${gateId}: ${err.message}\n`);
     }
+}
+
+// ── Gate SALVAGENTE: Killed claims require serendipity seed ──────────
+
+/**
+ * SALVAGENTE RULE (CLAUDE.md / Blueprint v5.0):
+ * When R2 kills a claim with reason INSUFFICIENT_EVIDENCE, CONFOUNDED,
+ * or PREMATURE, a serendipity seed MUST be produced.  Failure to salvage
+ * is a J0-scorable offense.
+ *
+ * Detection: content being written to CLAIM-LEDGER contains a KILLED
+ * event with one of the salvageable kill reasons.
+ *
+ * Enforcement: check serendipity_seeds table for a seed referencing
+ * the killed claim.  If none found → exit code 2 (BLOCK).
+ *
+ * @param {import('better-sqlite3').Database} db
+ * @param {string} sessionId
+ * @param {object} toolInput
+ * @returns {null|{exitCode: number, stderr: string}}
+ */
+function checkSalvagenteRule(db, sessionId, toolInput) {
+    const content = (toolInput.content || toolInput.new_string || '');
+    if (!content) return null;
+
+    // Detect a KILL event with salvageable reason
+    const SALVAGEABLE_REASONS = [
+        'INSUFFICIENT_EVIDENCE',
+        'CONFOUNDED',
+        'PREMATURE',
+    ];
+
+    const contentUpper = content.toUpperCase();
+
+    // Must contain KILLED and one of the salvageable reasons
+    if (!contentUpper.includes('KILLED')) return null;
+
+    const matchedReason = SALVAGEABLE_REASONS.find(r => contentUpper.includes(r));
+    if (!matchedReason) return null;
+
+    // Extract the claim ID being killed
+    const claimId = extractClaimId(content);
+    if (!claimId) return null;
+
+    // Check: does a serendipity seed exist for this claim?
+    if (!db || !sessionId) return null;
+
+    try {
+        // Look for a seed that references this claim (by claim_id in narrative,
+        // or created in the same session with SALVAGED_FROM_R2 source)
+        const seed = db.prepare(`
+            SELECT seed_id FROM serendipity_seeds
+            WHERE (
+                narrative LIKE ? OR narrative LIKE ?
+                OR source = 'SALVAGED_FROM_R2'
+            )
+            AND created_session IN (
+                SELECT id FROM sessions WHERE project_path IN (
+                    SELECT project_path FROM sessions WHERE id = ?
+                )
+            )
+            LIMIT 1
+        `).get(`%${claimId}%`, `%${claimId.replace('-', '')}%`, sessionId);
+
+        if (seed) {
+            // Seed exists — Salvagente satisfied
+            logGateResult(db, sessionId, 'SALVAGENTE', 'PASS', claimId, {
+                reason: matchedReason,
+                seed_id: seed.seed_id,
+            });
+            return null;
+        }
+
+        // Also check if a seed was created in the CURRENT session at all
+        // (may not reference the claim ID explicitly yet)
+        const recentSeed = db.prepare(`
+            SELECT seed_id FROM serendipity_seeds
+            WHERE created_session = ?
+            AND source = 'SALVAGED_FROM_R2'
+            AND created_at >= datetime('now', '-30 minutes')
+            LIMIT 1
+        `).get(sessionId);
+
+        if (recentSeed) {
+            logGateResult(db, sessionId, 'SALVAGENTE', 'PASS', claimId, {
+                reason: matchedReason,
+                seed_id: recentSeed.seed_id,
+                note: 'Recent SALVAGED_FROM_R2 seed found (within 30 min)',
+            });
+            return null;
+        }
+    } catch {
+        // DB error — fail open (don't block on our own bugs)
+        return null;
+    }
+
+    // No seed found → BLOCK
+    logGateResult(db, sessionId, 'SALVAGENTE', 'FAIL', claimId, {
+        reason: matchedReason,
+    });
+
+    return {
+        exitCode: 2,
+        stderr:
+            `GATE SALVAGENTE FAIL: Claim ${claimId} killed with reason ${matchedReason}.\n` +
+            `The Salvagente Rule requires a serendipity seed when killing a claim.\n` +
+            `Before recording this kill in CLAIM-LEDGER, you MUST:\n` +
+            `  1. Write a serendipity seed to SERENDIPITY.md with source=SALVAGED_FROM_R2\n` +
+            `  2. Include: causal_question, discriminating_test, score (0-20)\n` +
+            `  3. Then retry updating CLAIM-LEDGER.\n` +
+            `\nSalvagente Rule: "What R2 kills, serendipity may resurrect."`
+    };
 }
 
 // =====================================================================
@@ -1384,6 +1507,106 @@ function runObserverChecks(projectPath, db, sessionId) {
                 });
             }
         } catch { /* query failed, skip */ }
+    }
+
+    // -----------------------------------------------------------------
+    // Check 6: Serendipity seed escalation (LAW 5)
+    //   Seeds not followed up within ~50 actions → WARN
+    //   Seeds not followed up within ~100 actions → HALT
+    // -----------------------------------------------------------------
+    if (db && sessionId) {
+        try {
+            const pendingSeeds = db.prepare(`
+                SELECT s.seed_id, s.score, s.causal_question, s.created_at,
+                       s.created_session
+                FROM serendipity_seeds s
+                WHERE s.status IN ('PENDING_TRIAGE', 'QUEUED')
+                AND s.created_session IN (
+                    SELECT id FROM sessions WHERE project_path = (
+                        SELECT project_path FROM sessions WHERE id = ? LIMIT 1
+                    )
+                )
+            `).all(sessionId);
+
+            for (const seed of pendingSeeds) {
+                // Count spine entries since seed creation across all project sessions
+                const actionsSince = db.prepare(`
+                    SELECT COUNT(*) as cnt FROM spine_entries
+                    WHERE timestamp > ?
+                    AND session_id IN (
+                        SELECT id FROM sessions WHERE project_path = (
+                            SELECT project_path FROM sessions WHERE id = ? LIMIT 1
+                        )
+                    )
+                `).get(seed.created_at, sessionId);
+
+                const count = actionsSince?.cnt ?? 0;
+                const seedLabel = `${seed.seed_id}: "${(seed.causal_question || '').substring(0, 60)}"`;
+
+                if (count >= 100) {
+                    alerts.push({
+                        level: 'HALT',
+                        message:
+                            `SERENDIPITY ESCALATION (LAW 5): Seed ${seedLabel} has been ` +
+                            `pending for ${count} actions (>100 limit). ` +
+                            `This seed MUST be triaged NOW: promote to claim, test it, or kill it with justification.`
+                    });
+                } else if (count >= 50) {
+                    alerts.push({
+                        level: 'WARN',
+                        message:
+                            `Serendipity seed ${seedLabel} has been pending for ${count} actions. ` +
+                            `Follow up within ${100 - count} more actions or it will be escalated to HALT.`
+                    });
+                }
+            }
+        } catch { /* seed escalation check failed, skip */ }
+    }
+
+    // -----------------------------------------------------------------
+    // Check 7: High-score serendipity seed interrupt (score >= 15)
+    //   Seeds with score >= 15 demand immediate attention (INTERRUPT)
+    //   Seeds with score >= 10 should be queued for triage (WARN)
+    // -----------------------------------------------------------------
+    if (db && sessionId) {
+        try {
+            const highScoreSeeds = db.prepare(`
+                SELECT seed_id, score, causal_question
+                FROM serendipity_seeds
+                WHERE status = 'PENDING_TRIAGE'
+                AND score IS NOT NULL
+                AND score >= 10
+                AND created_session IN (
+                    SELECT id FROM sessions WHERE project_path = (
+                        SELECT project_path FROM sessions WHERE id = ? LIMIT 1
+                    )
+                )
+                ORDER BY score DESC
+                LIMIT 5
+            `).all(sessionId);
+
+            for (const seed of highScoreSeeds) {
+                const seedLabel = `${seed.seed_id} (score: ${seed.score})`;
+                const question = (seed.causal_question || '').substring(0, 80);
+
+                if (seed.score >= 15) {
+                    alerts.push({
+                        level: 'HALT',
+                        message:
+                            `SERENDIPITY INTERRUPT: Seed ${seedLabel} demands immediate attention. ` +
+                            `"${question}" — Score >= 15 triggers mandatory interruption. ` +
+                            `Triage this seed before continuing the main research line.`
+                    });
+                } else if (seed.score >= 10) {
+                    alerts.push({
+                        level: 'WARN',
+                        message:
+                            `Serendipity seed ${seedLabel} should be queued for triage. ` +
+                            `"${question}" — Consider investigating this lead.`
+                    });
+                }
+            }
+        } catch { /* high-score seed check failed, skip */ }
     }
 
     return alerts;
