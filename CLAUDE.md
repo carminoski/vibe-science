@@ -144,3 +144,28 @@ These are the **actually implemented** hooks:
 - **Stop hook** (`stop.js`): Runs when agent is about to end session. (1) Generates template-based narrative summary, saves to DB + embed queue; (2) Enforcement check — blocks stop (exit 2 + stderr) if unreviewed claims exist (LAW 4: R2 is co-pilot); (3) State export — updates `.vibe-science/STATE.md` from DB for resumability (LAW 7).
 
 All hooks degrade gracefully if the DB is unavailable (e.g., `better-sqlite3` not installed). They never hard-crash — infrastructure failure should not block the agent.
+
+### Hook Output Patterns (what the agent sees)
+
+**SessionStart** injects `additionalContext` (~700 tokens) with tagged sections:
+```
+--- VIBE SCIENCE CONTEXT ---
+[PURPOSE] Find what has NOT been done, then verify it with data...
+[STATE] Last session: 12 cycles, 3 claims, stage 2. "Explored gene X..."
+[MEMORY] Prior session recall: "Found correlation in dataset Y" (0.87)
+[ALERTS] WARN: STATE.md not updated in 48h
+[R2 CALIBRATION] R2 historically weak on: sample size checks
+[PENDING SEEDS] 2 seeds awaiting triage: SD-003 (score 12), SD-004 (score 15)
+--- END CONTEXT ---
+```
+
+**PostToolUse** exit 2 stderr patterns (advisory — tool already ran, agent must react):
+- `GATE DQ4 FAIL: FINDINGS.md numbers do not match JSON source. N mismatch(es) detected: [details]. Fix the numbers in FINDINGS.md to match the JSON data, then retry.`
+- `GATE L-1+ FAIL: No literature search registered for this session. You must perform a bibliographic search before defining a research direction.`
+- `PERMISSION DENIED: Agent "reviewer2" cannot write to CLAIM-LEDGER.md. Required role: researcher`
+- `OBSERVER HALT: STATE.md has not been updated in N hours (>72h limit). Update STATE.md before continuing.`
+- `SALVAGENTE FAIL: Claim C-XXX was killed but no serendipity seed was produced. LAW: R2 must produce a serendipity seed when killing a claim.`
+- `SEED ESCALATION: Serendipity seed SD-XXX (score >= 15) has not been triaged after N actions. INTERRUPT: triage this seed now.`
+
+**Stop** exit 2 stderr pattern (blocks session end):
+- `STOP BLOCKED: N unreviewed claims without R2 review: C-001, C-002, ... LAW 4: R2 is co-pilot.`
